@@ -131,6 +131,8 @@ email:
     forgotTitle: "Password reset Kerberos Hub. You forgot your password"
     share: "share"
     shareTitle: "[Action] You received a recording from Kerberos Hub"
+    caseShare: "share_case"
+    caseShareTitle: "[Action] A case has been shared with you on Kerberos Hub"
     detection: "detection"
     disabled: "disabled"
     highupload: "highupload"

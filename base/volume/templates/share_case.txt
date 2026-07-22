@@ -1,0 +1,21 @@
+Kerberos.io
+------------
+
+A case has been shared with you
+{{user}} shared a case with you
+
+Open the shared case
+{{user}} has shared a case with you. Open the link below to access it — you'll be asked to request a one-time verification code from the share page.
+{{url}}
+
+This link will expire in {{expiry}}.
+
+Get in touch
+------------
+support@kerberos.io
+9000 Ghent, BE
+https://kerberos.io
+
+About Kerberos
+------------
+Welcome to the revolutionary video analytics and video management platform. Open, modular, and extensible for everyone, anywhere.
