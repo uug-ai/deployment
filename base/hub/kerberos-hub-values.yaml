@@ -244,6 +244,11 @@ kerberoshub:
     replicas: 1
     schema: "http"
     url: "yourdomain.com"
+    
+    # The front-end but in read-only mode
+    demoEnabled: true
+    demoUrl: "app-demo.kerberos.io"
+  
     resources:
       requests:
         memory: 100Mi
