@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
       - name: factory
-        image: ghcr.io/uug-ai/factory:v2.0.2
+        image: ghcr.io/uug-ai/factory:v2.0.4
         resources:
           requests:
             memory: 128Mi
