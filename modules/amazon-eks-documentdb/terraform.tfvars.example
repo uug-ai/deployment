@@ -1,0 +1,33 @@
+# Copy to terraform.tfvars and adjust.
+
+name        = "kerberos-hub"
+region      = "eu-west-1"
+environment = "test"
+
+# Networking
+vpc_cidr                = "10.20.0.0/16"
+availability_zone_count = 3
+single_nat_gateway      = true
+
+# EKS
+kubernetes_version = "1.31"
+# Restrict this to your office or VPN range.
+cluster_endpoint_public_access_cidrs = ["0.0.0.0/0"]
+node_instance_types                  = ["t3.large"]
+node_desired_size                    = 2
+node_min_size                        = 2
+node_max_size                        = 4
+
+# DocumentDB
+docdb_engine_version         = "5.0.0"
+docdb_parameter_group_family = "docdb5.0"
+docdb_instance_class         = "db.t3.medium"
+docdb_instance_count         = 1
+docdb_username               = "kerberos"
+# Leave docdb_password unset to have one generated:
+#   terraform output -raw docdb_password
+docdb_tls = true
+
+# Throwaway test stack settings, flip these for anything long lived.
+docdb_deletion_protection = false
+docdb_skip_final_snapshot = true
