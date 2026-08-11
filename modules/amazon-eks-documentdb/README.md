@@ -234,6 +234,11 @@ Install the controllers and resources:
 ./ingress/install.sh
 ```
 
+The cert-manager values use `1.1.1.1` and `8.8.8.8` for HTTP-01 self-checks.
+This avoids waiting for the AWS VPC resolver if it cached an `NXDOMAIN` before
+the public records were created. The override affects only cert-manager's ACME
+self-checks; normal cluster DNS continues to use the VPC resolver.
+
 The script prints the NLB hostname. Create both DNS records as CNAMEs pointing
 to that hostname. You can retrieve it again with:
 
