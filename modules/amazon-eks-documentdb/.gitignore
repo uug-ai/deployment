@@ -10,3 +10,4 @@ override.tf.json
 *_override.tf.json
 terraform.tfvars
 *.auto.tfvars
+hub-values.yaml
