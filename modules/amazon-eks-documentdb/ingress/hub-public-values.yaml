@@ -1,0 +1,7 @@
+kerberoshub:
+  api:
+    schema: https
+    url: aws-api.kerberos.lol
+  frontend:
+    schema: https
+    url: aws-app.kerberos.lol

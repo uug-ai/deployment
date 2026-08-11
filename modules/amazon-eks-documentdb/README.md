@@ -213,6 +213,73 @@ rerun after deleting or replacing the DocumentDB cluster.
 These are public example credentials. Do not use this seed data in a production
 deployment.
 
+## Public HTTPS ingress
+
+The [`ingress`](ingress) package installs ingress-nginx behind an
+internet-facing AWS Network Load Balancer, installs cert-manager, and creates
+Let's Encrypt certificates for exactly these routes:
+
+| Host | Service |
+| ---- | ------- |
+| `aws-app.kerberos.lol` | `hub-frontend-svc:80` |
+| `aws-api.kerberos.lol` | `hub-api-svc:8081` |
+
+Keep the Hub chart's global `ingress` value disabled. The module owns these two
+Ingress resources so that enabling public access does not also expose the Hub
+administration services.
+
+Install the controllers and resources:
+
+```bash
+./ingress/install.sh
+```
+
+The script prints the NLB hostname. Create both DNS records as CNAMEs pointing
+to that hostname. You can retrieve it again with:
+
+```bash
+kubectl get service ingress-nginx-controller \
+  --namespace ingress-nginx \
+  --output jsonpath='{.status.loadBalancer.ingress[0].hostname}{"\n"}'
+```
+
+| DNS name | Type | Target |
+| -------- | ---- | ------ |
+| `aws-app.kerberos.lol` | CNAME | The ingress-nginx NLB hostname |
+| `aws-api.kerberos.lol` | CNAME | The ingress-nginx NLB hostname |
+
+cert-manager automatically retries its HTTP-01 challenges after DNS resolves;
+do not delete pending CertificateRequests. Wait for both certificates:
+
+```bash
+kubectl wait --namespace kerberos-hub \
+  --for=condition=Ready certificate/aws-app-kerberos-lol-tls \
+  certificate/aws-api-kerberos-lol-tls \
+  --timeout=10m
+```
+
+Set Hub's public URLs with the non-secret values fragment after the certificates
+are ready. Include the same private Hub and DocumentDB values used for the
+original installation:
+
+```bash
+helm upgrade hub kerberos/hub \
+  --version 0.127.0 \
+  --namespace kerberos-hub \
+  --file your-hub-values.yaml \
+  --file hub-documentdb-values.yaml \
+  --file ingress/hub-public-values.yaml \
+  --atomic \
+  --wait
+```
+
+Verify both public endpoints:
+
+```bash
+curl --fail https://aws-api.kerberos.lol/health
+curl --fail --output /dev/null https://aws-app.kerberos.lol/login
+```
+
 ## Persistent volumes
 
 The EBS CSI driver is installed, but EKS ships `gp2` as the default storage
@@ -238,8 +305,12 @@ EOF
 ## Tear down
 
 ```bash
-# Remove the release first so its load balancers and volumes are cleaned up.
+# Remove Kubernetes resources first so AWS load balancers and volumes are cleaned up.
+kubectl delete -f ingress/hub-ingresses.yaml --ignore-not-found
 helm uninstall hub -n kerberos-hub
+kubectl delete -f ingress/cluster-issuer.yaml --ignore-not-found
+helm uninstall cert-manager -n cert-manager
+helm uninstall ingress-nginx -n ingress-nginx
 
 terraform destroy
 ```

@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hub-frontend-ingress
+  namespace: kerberos-hub
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: aws-app.kerberos.lol
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hub-frontend-svc
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - aws-app.kerberos.lol
+      secretName: aws-app-kerberos-lol-tls
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hub-api-ingress
+  namespace: kerberos-hub
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: 200m
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: aws-api.kerberos.lol
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: hub-api-svc
+                port:
+                  number: 8081
+  tls:
+    - hosts:
+        - aws-api.kerberos.lol
+      secretName: aws-api-kerberos-lol-tls
