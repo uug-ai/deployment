@@ -1,0 +1,81 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: hub-documentdb-import
+  labels:
+    app.kubernetes.io/name: hub-documentdb-import
+spec:
+  activeDeadlineSeconds: 300
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hub-documentdb-import
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: import
+          image: mongo:7.0
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -ec
+            - |
+              flavor="$(printf '%s' "$MONGODB_FLAVOR" | tr '[:upper:]' '[:lower:]')"
+              retry_writes="$(printf '%s' "$MONGODB_RETRY_WRITES" | tr '[:upper:]' '[:lower:]')"
+
+              if [ "$flavor" != "documentdb" ]; then
+                echo "Refusing import: MONGODB_FLAVOR must be documentdb" >&2
+                exit 1
+              fi
+              if [ "$retry_writes" != "false" ]; then
+                echo "Refusing import: MONGODB_RETRY_WRITES must be false for DocumentDB" >&2
+                exit 1
+              fi
+              if [ ! -r /certs/global-bundle.pem ]; then
+                echo "Refusing import: /certs/global-bundle.pem is not readable" >&2
+                exit 1
+              fi
+
+              mongosh "$MONGODB_URI" \
+                --tls \
+                --tlsCAFile /certs/global-bundle.pem \
+                --quiet \
+                --file /scripts/hub-import.js
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGODB_URI
+            - name: MONGODB_FLAVOR
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGODB_FLAVOR
+            - name: MONGODB_RETRY_WRITES
+              valueFrom:
+                configMapKeyRef:
+                  name: mongodb-config
+                  key: MONGODB_RETRY_WRITES
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          volumeMounts:
+            - name: import-script
+              mountPath: /scripts
+              readOnly: true
+            - name: mongodb-tls
+              mountPath: /certs
+              readOnly: true
+      volumes:
+        - name: import-script
+          configMap:
+            name: hub-documentdb-import
+        - name: mongodb-tls
+          secret:
+            secretName: mongodb-ca
+            items:
+              - key: global-bundle.pem
+                path: global-bundle.pem

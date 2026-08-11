@@ -163,6 +163,7 @@ through the `mongodb-config` ConfigMap.
 ```bash
 helm repo add kerberos https://charts.kerberos.io
 helm install hub kerberos/hub \
+  --version 0.127.0 \
   -n kerberos-hub \
   -f your-hub-values.yaml \
   -f hub-documentdb-values.yaml
@@ -185,6 +186,32 @@ kubectl run mongosh --rm -it --restart=Never -n kerberos-hub \
   --image=mongodb/mongodb-community-server:7.0-ubi8 \
   --overrides='{"spec":{"volumes":[{"name":"ca","secret":{"secretName":"mongodb-ca"}}],"containers":[{"name":"mongosh","image":"mongodb/mongodb-community-server:7.0-ubi8","stdin":true,"tty":true,"command":["mongosh"],"args":["'"$(terraform output -raw mongodb_uri)"'&tls=true&tlsCAFile=/certs/global-bundle.pem"],"volumeMounts":[{"name":"ca","mountPath":"/certs"}]}]}}'
 ```
+
+### 5. Import the example Hub data
+
+This module has a separate DocumentDB import under [`database-import`](database-import).
+It uses the chart-managed `mongodb-config`, mounts `mongodb-ca`, forces TLS with
+the Amazon RDS CA bundle, and refuses to run unless the backend flavor is
+`documentdb` with retryable writes disabled. Install Hub chart `0.127.0` or
+newer before running it.
+
+Run it after installing Hub:
+
+```bash
+./database-import/run.sh
+```
+
+The import is idempotent: it upserts two example users, one subscription and
+five settings documents using fixed IDs, then verifies those records. It can be
+rerun after deleting or replacing the DocumentDB cluster.
+
+| Account | Password | Role |
+| ------- | -------- | ---- |
+| `example-user` | `example-password` | Hub owner |
+| `example-application` | `example-password` | Admin application |
+
+These are public example credentials. Do not use this seed data in a production
+deployment.
 
 ## Persistent volumes
 
