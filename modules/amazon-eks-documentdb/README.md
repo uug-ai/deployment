@@ -68,6 +68,28 @@ terraform apply
 Creating the cluster and the database takes a while (EKS and DocumentDB are
 both slow to provision).
 
+### Replacing the VPC
+
+AWS cannot move a DocumentDB subnet group or cluster between VPCs. The subnet
+group name therefore includes the VPC ID, allowing Terraform to create a new
+group and replace the cluster when the VPC changes instead of attempting an
+unsupported in-place subnet update.
+
+Discard any saved plan created before a VPC replacement or configuration
+change, then create and apply a fresh one:
+
+```bash
+rm -f tfplan
+terraform plan -out=tfplan
+terraform apply tfplan
+```
+
+> [!WARNING]
+> Replacing the VPC also replaces the DocumentDB cluster. If it contains data,
+> create and verify a snapshot before applying the plan; a final snapshot
+> preserves the old data but is not restored into the replacement cluster
+> automatically.
+
 State is kept locally by default. For anything shared, add a backend, for
 example:
 

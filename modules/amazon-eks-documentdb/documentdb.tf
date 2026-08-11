@@ -22,7 +22,8 @@ resource "random_password" "docdb" {
 }
 
 locals {
-  docdb_password = var.docdb_password != null ? var.docdb_password : random_password.docdb[0].result
+  docdb_password          = var.docdb_password != null ? var.docdb_password : random_password.docdb[0].result
+  docdb_subnet_group_name = "${local.name}-docdb-${module.vpc.vpc_id}"
 }
 
 resource "aws_security_group" "docdb" {
@@ -56,11 +57,15 @@ resource "aws_vpc_security_group_ingress_rule" "docdb_from_cidrs" {
 }
 
 resource "aws_docdb_subnet_group" "this" {
-  name        = "${local.name}-docdb"
+  name        = local.docdb_subnet_group_name
   description = "Private subnets of the Kerberos Hub VPC"
   subnet_ids  = module.vpc.private_subnets
 
   tags = local.tags
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_docdb_cluster_parameter_group" "this" {
@@ -107,6 +112,10 @@ resource "aws_docdb_cluster" "this" {
   final_snapshot_identifier = var.docdb_skip_final_snapshot ? null : "${local.name}-docdb-final"
 
   tags = local.tags
+
+  lifecycle {
+    replace_triggered_by = [aws_docdb_subnet_group.this.name]
+  }
 }
 
 resource "aws_docdb_cluster_instance" "this" {
