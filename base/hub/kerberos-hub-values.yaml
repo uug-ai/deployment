@@ -157,7 +157,7 @@ kerberoshub:
   api:
     repository: ghcr.io/uug-ai/hub-api
     pullPolicy: IfNotPresent
-    tag: "v1.9.29"
+    tag: "v1.9.48"
     replicas: 1
     jwtSecret: "I1JcwzW3A0t_THIS-IS_NOT_A_SECRET_WJK9jnPkipbnVTpf0efMy" # change to a random value, this is for generating JWT tokens.
     schema: "http"
@@ -240,15 +240,13 @@ kerberoshub:
   frontend:
     repository: ghcr.io/uug-ai/hub-frontend
     pullPolicy: IfNotPresent
-    tag: "v1.9.32"
+    tag: "v1.13.0"
     replicas: 1
     schema: "http"
     url: "yourdomain.com"
-    
     # The front-end but in read-only mode
     demoEnabled: true
     demoUrl: "app-demo.kerberos.io"
-  
     resources:
       requests:
         memory: 100Mi
@@ -365,7 +363,7 @@ kerberoshub:
   monitordevice:
     repository: ghcr.io/uug-ai/hub-monitor-device
     pullPolicy: IfNotPresent
-    tag: "v1.4.0"
+    tag: "v1.4.1"
     resources:
       requests:
         memory: 50Mi
@@ -417,7 +415,7 @@ kerberospipeline:
   event:
     repository: ghcr.io/uug-ai/hub-pipeline-event
     pullPolicy: IfNotPresent
-    tag: "v1.3.0"
+    tag: "v1.3.1"
     replicas: 1
     resources:
       requests:
@@ -429,7 +427,7 @@ kerberospipeline:
   monitor:
     repository: ghcr.io/uug-ai/hub-pipeline-monitor
     pullPolicy: IfNotPresent
-    tag: "v1.3.10"
+    tag: "v1.3.11"
     replicas: 1
     resources:
       requests:
@@ -441,7 +439,7 @@ kerberospipeline:
   sequence:
     repository: ghcr.io/uug-ai/hub-pipeline-sequence
     pullPolicy: IfNotPresent
-    tag: "v1.6.18"
+    tag: "v1.6.23"
     replicas: 1
     resources:
       requests:
@@ -465,7 +463,7 @@ kerberospipeline:
   notify:
     repository: ghcr.io/uug-ai/hub-pipeline-notification
     pullPolicy: IfNotPresent
-    tag: "v1.3.9"
+    tag: "v1.3.17"
     replicas: 1
     resources:
       requests:
@@ -505,7 +503,7 @@ kerberospipeline:
   analysis:
     repository: ghcr.io/uug-ai/hub-pipeline-analysis
     pullPolicy: IfNotPresent
-    tag: "v1.7.17"
+    tag: "v1.8.4"
     replicas: 1
     resources:
       requests:
@@ -517,7 +515,7 @@ kerberospipeline:
   dominantColor:
     repository: ghcr.io/uug-ai/hub-pipeline-dominantcolors
     pullPolicy: IfNotPresent
-    tag: "v2.0.2"
+    tag: "v2.0.3"
     replicas: 1
     resources:
       requests:
@@ -529,7 +527,7 @@ kerberospipeline:
   thumbnail:
     repository: ghcr.io/uug-ai/hub-pipeline-thumbnail
     pullPolicy: IfNotPresent
-    tag: "v1.3.6"
+    tag: "v1.3.10"
     replicas: 1
     quality: "1" # 1 (best) - 31 (worst)
     width: "600"
@@ -556,7 +554,7 @@ kerberospipeline:
     enabled: true # Enable or disable the sprite generation 'true' or 'false
     repository: ghcr.io/uug-ai/hub-pipeline-sprite
     pullPolicy: IfNotPresent
-    tag: "v1.1.14"
+    tag: "v1.1.16"
     replicas: 1
     interval: "1" # Number of secondes between each thumbnail in the sprite
     width: "240" # Should not be changed for the moment (hard coded in UI)
@@ -571,7 +569,7 @@ kerberospipeline:
   export:
     repository: ghcr.io/uug-ai/hub-pipeline-export
     pullPolicy: IfNotPresent
-    tag: "v1.2.8"
+    tag: "v1.2.9"
     replicas: 1
     resources:
       requests:
