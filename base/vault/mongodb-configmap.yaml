@@ -16,3 +16,15 @@ data:
   MONGODB_DATABASE_CREDENTIALS: "admin"
   MONGODB_USERNAME: "root"
   MONGODB_PASSWORD: "yourpassword"
+
+  # MongoDB-compatible backend and connection behavior.
+  # Use "documentdb" for AWS DocumentDB; retryable writes are always disabled
+  # by Vault for that flavor.
+  MONGODB_FLAVOR: "mongodb"
+  MONGODB_RETRY_WRITES: "true"
+
+  # TLS is disabled by default. A non-empty CA file path also enables TLS, but
+  # the referenced PEM bundle must be mounted into the Vault container.
+  MONGODB_TLS: "false"
+  MONGODB_TLS_CA_FILE: ""
+  MONGODB_TLS_INSECURE_SKIP_VERIFY: "false"
