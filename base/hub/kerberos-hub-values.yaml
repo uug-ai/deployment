@@ -157,7 +157,7 @@ kerberoshub:
   api:
     repository: ghcr.io/uug-ai/hub-api
     pullPolicy: IfNotPresent
-    tag: "v1.9.48"
+    tag: "v1.9.51"
     replicas: 1
     jwtSecret: "I1JcwzW3A0t_THIS-IS_NOT_A_SECRET_WJK9jnPkipbnVTpf0efMy" # change to a random value, this is for generating JWT tokens.
     schema: "http"
@@ -240,7 +240,7 @@ kerberoshub:
   frontend:
     repository: ghcr.io/uug-ai/hub-frontend
     pullPolicy: IfNotPresent
-    tag: "v1.13.0"
+    tag: "v1.13.9"
     replicas: 1
     schema: "http"
     url: "yourdomain.com"
@@ -355,7 +355,7 @@ kerberoshub:
   cleanup:
     repository: ghcr.io/uug-ai/hub-cleanup
     pullPolicy: IfNotPresent
-    tag: "v1.4.16"
+    tag: "v1.4.19"
     resources:
       requests:
         memory: 50Mi
@@ -363,7 +363,7 @@ kerberoshub:
   monitordevice:
     repository: ghcr.io/uug-ai/hub-monitor-device
     pullPolicy: IfNotPresent
-    tag: "v1.4.1"
+    tag: "v1.4.2"
     resources:
       requests:
         memory: 50Mi
@@ -427,7 +427,7 @@ kerberospipeline:
   monitor:
     repository: ghcr.io/uug-ai/hub-pipeline-monitor
     pullPolicy: IfNotPresent
-    tag: "v1.3.11"
+    tag: "v1.3.13"
     replicas: 1
     resources:
       requests:
@@ -439,7 +439,7 @@ kerberospipeline:
   sequence:
     repository: ghcr.io/uug-ai/hub-pipeline-sequence
     pullPolicy: IfNotPresent
-    tag: "v1.6.23"
+    tag: "v1.6.26"
     replicas: 1
     resources:
       requests:
@@ -451,7 +451,7 @@ kerberospipeline:
   throttler:
     repository: uugai/hub-pipeline-throttler
     pullPolicy: IfNotPresent
-    tag: "v1.2.0"
+    tag: "v1.2.1"
     replicas: 1
     resources:
       requests:
@@ -463,7 +463,7 @@ kerberospipeline:
   notify:
     repository: ghcr.io/uug-ai/hub-pipeline-notification
     pullPolicy: IfNotPresent
-    tag: "v1.3.17"
+    tag: "v1.3.18"
     replicas: 1
     resources:
       requests:
@@ -483,7 +483,7 @@ kerberospipeline:
   notifyTest:
     repository: uugai/hub-pipeline-notification-test
     pullPolicy: IfNotPresent
-    tag: "v1.2.1"
+    tag: "v1.2.2"
     replicas: 1
     resources:
       requests:
@@ -503,7 +503,7 @@ kerberospipeline:
   analysis:
     repository: ghcr.io/uug-ai/hub-pipeline-analysis
     pullPolicy: IfNotPresent
-    tag: "v1.8.4"
+    tag: "v1.8.5"
     replicas: 1
     resources:
       requests:
@@ -544,7 +544,7 @@ kerberospipeline:
   counting:
     repository: uugai/hub-pipeline-counting
     pullPolicy: IfNotPresent
-    tag: "v1.6.3"
+    tag: "v2.0.0"
     replicas: 1
     resources:
       requests:
@@ -569,7 +569,7 @@ kerberospipeline:
   export:
     repository: ghcr.io/uug-ai/hub-pipeline-export
     pullPolicy: IfNotPresent
-    tag: "v1.2.9"
+    tag: "v1.2.10"
     replicas: 1
     resources:
       requests:
