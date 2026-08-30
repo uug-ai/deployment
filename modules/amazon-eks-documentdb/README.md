@@ -166,8 +166,14 @@ helm install hub kerberos/hub \
   --version 0.127.0 \
   -n kerberos-hub \
   -f your-hub-values.yaml \
-  -f hub-documentdb-values.yaml
+  -f hub-documentdb-values.yaml \
+  --set-string kerberoshub.api.tag=v1.9.49
 ```
+
+Hub API `v1.9.49` is the first release that disables the MongoDB Stable API in
+DocumentDB mode. Older images can fail the SCRAM-SHA-1 handshake with
+`sasl conversation error: ... Query syntax error`, even when the username,
+password and authentication mechanism are correct.
 
 The `hub_values_snippet` output contains credentials, so treat the generated
 file as a secret and do not commit it.
@@ -177,7 +183,14 @@ file as a secret and do not commit it.
 ```bash
 kubectl logs -n kerberos-hub deploy/hub-api | head -50
 kubectl exec -n kerberos-hub deploy/hub-api -- ls -l /certs
+kubectl get deployment hub-api -n kerberos-hub \
+  -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+kubectl get configmap mongodb-config -n kerberos-hub \
+  -o jsonpath='{.data.MONGODB_FLAVOR}{"\n"}'
 ```
+
+The last two commands must report Hub API `v1.9.49` or newer and
+`documentdb`, respectively.
 
 A one-off connectivity check from inside the cluster:
 
@@ -274,6 +287,7 @@ helm upgrade hub kerberos/hub \
   --file your-hub-values.yaml \
   --file hub-documentdb-values.yaml \
   --file ingress/hub-public-values.yaml \
+  --set-string kerberoshub.api.tag=v1.9.49 \
   --atomic \
   --wait
 ```
