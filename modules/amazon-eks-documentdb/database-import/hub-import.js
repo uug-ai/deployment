@@ -1,6 +1,7 @@
 const database = db.getSiblingDB('Kerberos');
 const ownerUsername = 'example-user';
 const applicationUsername = 'example-application';
+const organisationName = 'example-orgranisation';
 const zeroObjectId = ObjectId('000000000000000000000000');
 const ownerCreatedAt = ISODate('2016-09-20T09:27:58.811Z');
 const ownerUpdatedAt = ISODate('2020-06-14T05:01:35.000Z');
@@ -89,7 +90,7 @@ upsert('users', ownerId, {
 });
 
 insertIfMissing('organisation', ownerId, {
-  name: ownerUsername,
+  name: organisationName,
   ownerId,
   isActive: true,
   settings: {
