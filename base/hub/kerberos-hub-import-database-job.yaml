@@ -43,14 +43,70 @@ data:
         conn = db.getMongo();
         db = conn.getDB('Kerberos');
 
+        const ownerUsername = 'example-user';
+        const applicationUsername = 'example-application';
+        const zeroObjectId = ObjectId('000000000000000000000000');
+        const ownerCreatedAt = ISODate('2016-09-20T09:27:58.811Z');
+        const ownerUpdatedAt = ISODate('2020-06-14T05:01:35.000Z');
+
+        function resolveUserId(username) {
+            const users = db.users.find(
+                { username: username },
+                { _id: 1 }
+            ).limit(2).toArray();
+            if (users.length > 1) {
+                throw new Error(`Cannot import duplicate username: ${username}`);
+            }
+            if (users.length === 1) {
+                if (!users[0]._id || typeof users[0]._id.toHexString !== 'function') {
+                    throw new Error(`Existing user ${username} does not have an ObjectId _id`);
+                }
+                return users[0]._id;
+            }
+            return ObjectId();
+        }
+
+        const ownerId = resolveUserId(ownerUsername);
+        const applicationId = resolveUserId(applicationUsername);
+
+        function assertAcknowledged(result, operation) {
+            if (!result.acknowledged) {
+                throw new Error(`${operation} was not acknowledged`);
+            }
+        }
+
+        function insertIfMissing(collection, id, values) {
+            const result = db.getCollection(collection).updateOne(
+                { _id: id },
+                { $setOnInsert: values },
+                { upsert: true }
+            );
+            assertAcknowledged(result, `Insert for ${collection}/${id}`);
+        }
+
+        function setObjectIdIfMissing(collection, id, field, value) {
+            const result = db.getCollection(collection).updateOne(
+                {
+                    _id: id,
+                    $or: [
+                        { [field]: { $exists: false } },
+                        { [field]: null },
+                        { [field]: zeroObjectId }
+                    ]
+                },
+                { $set: { [field]: value } }
+            );
+            assertAcknowledged(result, `Initialisation of ${collection}.${field}`);
+        }
+
         // This will create a user with the following credentials.
         // username: example-user
         // password: example-password
         db.users.updateOne(
-            { '_id': ObjectId('57e1011e3178aa6c5cc774d1') },
+            { '_id': ownerId },
             {
                 $set: {
-                'username': 'example-user',
+                'username': ownerUsername,
                 'email': 'example-user@email.com',
                 'password': '$2a$10$jwLcD/.UT/1WLK7ct1XuHewI3GQXwW3zerPhCCs7QDrReEuIHbVYi',
                 'role': 'owner',
@@ -58,8 +114,8 @@ data:
                 'timezone': 'Europe/Brussels',
                 'isActive': NumberLong(1),
                 'registerToken': '',
-                'updated_at': ISODate('2020-06-14T05:01:35.000Z'),
-                'created_at': ISODate('2016-09-20T09:27:58.811Z'),
+                'updated_at': ownerUpdatedAt,
+                'created_at': ownerCreatedAt,
                 'amazon_secret_access_key': 'K6rRLBI1xxxCk3C1H',
                 'amazon_access_key_id': 'AKIAxxxxxxG5Q',
                 'card_brand': 'Visa',
@@ -71,16 +127,85 @@ data:
             { upsert: true }
         );
 
+        // The owner gets a random ObjectId on first import and is resolved by
+        // username on reruns. Its organisation and default project share it.
+        insertIfMissing('organisation', ownerId, {
+            name: ownerUsername,
+            ownerId: ownerId,
+            isActive: true,
+            settings: {
+                timezone: 'Europe/Brussels'
+            },
+            audit: {
+                createdBy: ownerId.toHexString(),
+                createdAt: ownerCreatedAt,
+                updatedBy: ownerId.toHexString(),
+                updatedAt: ownerUpdatedAt,
+                lastAction: 'organisation.created'
+            }
+        });
+
+        const membershipResult = db.organisation_users.updateOne(
+            {
+                userId: ownerId,
+                organisationId: ownerId
+            },
+            {
+                $setOnInsert: {
+                    userId: ownerId,
+                    organisationId: ownerId,
+                    status: 'active',
+                    invitedBy: ownerId,
+                    joinedAt: ownerCreatedAt,
+                    audit: {
+                        createdBy: ownerId.toHexString(),
+                        createdAt: ownerCreatedAt,
+                        updatedBy: ownerId.toHexString(),
+                        updatedAt: ownerUpdatedAt,
+                        lastAction: 'organisation.membership.created'
+                    }
+                }
+            },
+            { upsert: true }
+        );
+        assertAcknowledged(membershipResult, 'Owner organisation membership');
+
+        insertIfMissing('project', ownerId, {
+            organisationId: ownerId,
+            name: 'Project 1',
+            slug: 'project-1',
+            isActive: true,
+            audit: {
+                createdBy: ownerId.toHexString(),
+                createdAt: ownerCreatedAt,
+                updatedBy: ownerId.toHexString(),
+                updatedAt: ownerUpdatedAt,
+                lastAction: 'project.default.created'
+            }
+        });
+
+        // Initialise only missing selections. Re-running the import must not
+        // reset a user who has since selected another organisation or project.
+        setObjectIdIfMissing('users', ownerId, 'organisationId', ownerId);
+        const importedOwner = db.users.findOne(
+            { _id: ownerId, organisationId: { $type: 'objectId' } },
+            { organisationId: 1 }
+        );
+        if (!importedOwner) {
+            throw new Error('Imported owner has an invalid organisationId');
+        }
+        setObjectIdIfMissing('users', ownerId, 'projectId', importedOwner.organisationId);
+
 
         // This will create an application with the following credentials, which
         // can be used to authenticate with the admin panel.
         // username: example-application
         // password: example-password
         db.users.updateOne(
-            { '_id': ObjectId('57e1011e3178aa6c5cc774d2') },
+            { '_id': applicationId },
             {
                 $set: {
-                'username': 'example-application',
+                'username': applicationUsername,
                 'email': 'example-application@email.com',
                 'password': '$2a$10$jwLcD/.UT/1WLK7ct1XuHewI3GQXwW3zerPhCCs7QDrReEuIHbVYi',
                 'role': 'application',
@@ -99,7 +224,7 @@ data:
         // Subscriptions allow you to modify specific permissions and features for a user.
         // As you'll see below you can specify specific threshold for each subscription.
         db.subscriptions.updateOne(
-            { '_id': ObjectId('57e1011e3178aa6c5cc774d1') },
+            { '_id': ownerId },
             {
                 $set: {
                 'name': 'default',
@@ -108,7 +233,8 @@ data:
                 'quantity': 1,
                 'trial_ends_at': null,
                 'ends_at': null,
-                'user_id': '57e1011e3178aa6c5cc774d1',
+                'user_id': ownerId.toHexString(),
+                'status': 'active',
                 'updated_at': ISODate('2021-04-27T09:45:30.169Z'),
                 'created_at': ISODate('2016-09-20T09:35:03.448Z'),
                 'stripe_status': 'active'
@@ -116,6 +242,7 @@ data:
             },
             { upsert: true }
         );
+        setObjectIdIfMissing('subscriptions', ownerId, 'organisation_id', ownerId);
 
         // This will create a settings object for the subscription.
         // and will allow you to modify the settings for the subscription.
@@ -241,3 +368,86 @@ data:
             },
             { upsert: true }
         );
+
+        const importedUsers = db.users.countDocuments({
+            _id: {
+                $in: [ownerId, applicationId]
+            }
+        });
+        const importedOwnerUsernames = db.users.countDocuments({ username: ownerUsername });
+        const importedApplicationUsernames = db.users.countDocuments({ username: applicationUsername });
+        const importedOwnerSelection = db.users.findOne(
+            {
+                _id: ownerId,
+                organisationId: { $type: 'objectId' },
+                projectId: { $type: 'objectId' }
+            },
+            { organisationId: 1, projectId: 1 }
+        );
+        const importedOrganisations = db.organisation.countDocuments({
+            _id: ownerId,
+            ownerId: ownerId,
+            isActive: true
+        });
+        const importedMemberships = db.organisation_users.countDocuments({
+            userId: ownerId,
+            organisationId: ownerId,
+            status: 'active'
+        });
+        const importedProjects = db.project.countDocuments({
+            _id: ownerId,
+            organisationId: ownerId,
+            slug: 'project-1',
+            isActive: true
+        });
+        const importedSubscriptions = db.subscriptions.countDocuments({
+            _id: ownerId,
+            organisation_id: ownerId
+        });
+        const importedSettings = db.settings.countDocuments({
+            _id: {
+                $in: [
+                    ObjectId('5a72c509e17699d18ada9154'),
+                    ObjectId('63f346ec64011a574161cf99'),
+                    ObjectId('5a43fa12d885eb7da57046b3'),
+                    ObjectId('5a4d3a6bd885eb7da5e6b297'),
+                    ObjectId('5a53d0a0d885eb7da53ed5a6')
+                ]
+            }
+        });
+
+        if (!importedOwnerSelection) {
+            throw new Error('Imported owner is missing ObjectId organisation/project selections');
+        }
+        const selectedOrganisationExists = db.organisation.countDocuments({
+            _id: importedOwnerSelection.organisationId
+        });
+        const selectedProjectExists = db.project.countDocuments({
+            _id: importedOwnerSelection.projectId,
+            organisationId: importedOwnerSelection.organisationId
+        });
+        const selectedProjectIsLogicalDefault = importedOwnerSelection.projectId.equals(
+            importedOwnerSelection.organisationId
+        );
+
+        if (
+            importedUsers !== 2 ||
+            importedOwnerUsernames !== 1 ||
+            importedApplicationUsernames !== 1 ||
+            importedOrganisations !== 1 ||
+            importedMemberships !== 1 ||
+            importedProjects !== 1 ||
+            importedSubscriptions !== 1 ||
+            importedSettings !== 5 ||
+            selectedOrganisationExists !== 1 ||
+            (!selectedProjectIsLogicalDefault && selectedProjectExists !== 1)
+        ) {
+            throw new Error(
+                `Import verification failed: users=${importedUsers}, ` +
+                `organisations=${importedOrganisations}, memberships=${importedMemberships}, ` +
+                `projects=${importedProjects}, subscriptions=${importedSubscriptions}, ` +
+                `settings=${importedSettings}`
+            );
+        }
+
+        print('Imported 2 users, 1 organisation, 1 membership, 1 project, 1 subscription, and 5 settings records into Kerberos.');
