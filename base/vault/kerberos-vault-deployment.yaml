@@ -51,9 +51,6 @@ spec:
               value: ""
             - name: MQTT_PASSWORD
               value: ""
-            # If you have a chained vault setup, enable this.
-            - name: CONTINUOUS_FORWARDING
-              value: "false"
 # MongoDB URI (for example for a SaaS service like MongoDB Atlas)
 # If uri is set, the below properties are not used (host, adminDatabase, username, password)
 #MONGODB_URI: "mongodb+srv://xx:xx@kerberos-hub.xxx.mongodb.net/?retryWrites=true&w=majority&appName=xxx"

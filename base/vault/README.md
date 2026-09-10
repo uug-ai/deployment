@@ -126,10 +126,10 @@ Relevant environment variables are defined directly on the Vault Deployment:
 | `KERBEROS_LOGIN_USERNAME` / `KERBEROS_LOGIN_PASSWORD` | `root` / `kerberos` | Vault UI login. Change these demo credentials. |
 | `MQTTURI` | `tcp://mqtt.kerberos.io:1883` | MQTT broker used for on-demand forwarding. |
 | `MQTT_USERNAME` / `MQTT_PASSWORD` | empty | Optional MQTT credentials. |
-| `CONTINUOUS_FORWARDING` | `false` | Enables forwarding for a chained Vault setup. |
 
 Storage providers, integrations, and Vault accounts are configured through the
-UI after the pod starts. See [`README.configure.md`](../../README.configure.md).
+UI after the pod starts. An enabled Kerberos Vault integration automatically
+starts the forwarding worker. See [`README.configure.md`](../../README.configure.md).
 
 ## Deploy with kubectl without Kustomize
 
