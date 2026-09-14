@@ -129,7 +129,7 @@ through `envFrom`. Only `GIN_MODE` remains directly on either Deployment:
 | Variable | Default here | Meaning |
 | -------- | ------------ | ------- |
 | `KERBEROS_LOGIN_USERNAME` / `KERBEROS_LOGIN_PASSWORD` | `root` / `kerberos` | Vault UI login. Change these demo credentials. |
-| `MQTTURI` | `tcp://mqtt.kerberos.io:1883` | MQTT broker used for on-demand forwarding. |
+| `MQTT_URI` | `tcp://mqtt.kerberos.io:1883` | MQTT broker used for on-demand forwarding. |
 | `MQTT_USERNAME` / `MQTT_PASSWORD` | empty | Optional MQTT credentials. |
 | `VAULT_STORAGE_PROVIDERS` | unset | JSON array of runtime-managed storage providers. |
 | `VAULT_INTEGRATIONS` | unset | JSON array of runtime-managed integrations. |
