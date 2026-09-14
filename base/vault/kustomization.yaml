@@ -1,6 +1,7 @@
 namespace: kerberos-vault
 resources:
   - mongodb-configmap.yaml
+  - vault-runtime-configuration-configmap.yaml
   - kerberos-vault-deployment.yaml
   - kerberos-vault-service.yaml
   - data-filtering-deployment.yaml

@@ -1,0 +1,16 @@
+# Plaintext defaults for local development. Provider, integration, and account
+# lists stay empty so credentials can be managed through the Vault UI/database.
+# Use vault-runtime-configuration-secret.yaml for environment-managed resources.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-runtime-configuration
+data:
+  KERBEROS_LOGIN_USERNAME: "root"
+  KERBEROS_LOGIN_PASSWORD: "kerberos"
+  MQTTURI: "tcp://mqtt.kerberos.io:1883"
+  MQTT_USERNAME: ""
+  MQTT_PASSWORD: ""
+  VAULT_STORAGE_PROVIDERS: "[]"
+  VAULT_INTEGRATIONS: "[]"
+  VAULT_ACCOUNTS: "[]"

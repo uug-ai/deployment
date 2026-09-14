@@ -18,9 +18,12 @@ recording bytes to storage providers configured through the Vault UI.
 | File | Kind | Purpose |
 | ---- | ---- | ------- |
 | [`mongodb-configmap.yaml`](./mongodb-configmap.yaml) | `ConfigMap` | Supplies Vault's MongoDB connection, backend flavor, retry-write, and TLS settings. |
-| [`kerberos-vault-deployment.yaml`](./kerberos-vault-deployment.yaml) | `Deployment` | Runs the Vault API and UI on container port `80`. |
+| [`kerberos-vault-deployment.yaml`](./kerberos-vault-deployment.yaml) | `Deployment` | ConfigMap-backed Vault example selected by the base Kustomization. |
+| [`kerberos-vault-deployment-with-secrets.yaml`](./kerberos-vault-deployment-with-secrets.yaml) | `Deployment` | Alternative Secret-backed Vault example. |
 | [`kerberos-vault-service.yaml`](./kerberos-vault-service.yaml) | `Service` | Exposes Vault on `NodePort` **30080**. A commented `LoadBalancer` variant is included. |
 | [`data-filtering-deployment.yaml`](./data-filtering-deployment.yaml) | `Deployment` | Optional YOLO data-filtering worker. The default manifest requests one NVIDIA GPU. |
+| [`vault-runtime-configuration-configmap.yaml`](./vault-runtime-configuration-configmap.yaml) | `ConfigMap` | Plaintext local defaults used by the base Kustomization; managed-resource lists are empty. |
+| [`vault-runtime-configuration-secret.yaml`](./vault-runtime-configuration-secret.yaml) | `Secret` | Optional provider, integration, and account example for production secret handling. |
 
 The matching `kerberos-vault` namespace is defined in
 [`../namespaces/kerberos-vault.yaml`](../namespaces/kerberos-vault.yaml).
@@ -30,7 +33,8 @@ The matching `kerberos-vault` namespace is defined in
 - A running Kubernetes cluster and `kubectl` configured to reach it.
 - A MongoDB-compatible database reachable from the Vault pod.
 - A storage provider such as MinIO, Amazon S3, Google Cloud Storage, or Azure
-  Blob Storage. Configure it in the Vault UI after deployment.
+  Blob Storage. Configure it in the Vault UI or through the optional runtime
+  configuration ConfigMap or Secret after deployment.
 - An NVIDIA-capable node and device plugin only when deploying the optional
   data-filtering worker with its default resource settings.
 
@@ -119,17 +123,62 @@ authentication to `SCRAM-SHA-1` and does not enable MongoDB Stable API.
 
 ## Vault configuration
 
-Relevant environment variables are defined directly on the Vault Deployment:
+The selected runtime ConfigMap or Secret supplies these environment variables
+through `envFrom`. Only `GIN_MODE` remains directly on either Deployment:
 
 | Variable | Default here | Meaning |
 | -------- | ------------ | ------- |
 | `KERBEROS_LOGIN_USERNAME` / `KERBEROS_LOGIN_PASSWORD` | `root` / `kerberos` | Vault UI login. Change these demo credentials. |
 | `MQTTURI` | `tcp://mqtt.kerberos.io:1883` | MQTT broker used for on-demand forwarding. |
 | `MQTT_USERNAME` / `MQTT_PASSWORD` | empty | Optional MQTT credentials. |
+| `VAULT_STORAGE_PROVIDERS` | unset | JSON array of runtime-managed storage providers. |
+| `VAULT_INTEGRATIONS` | unset | JSON array of runtime-managed integrations. |
+| `VAULT_ACCOUNTS` | unset | JSON array of runtime-managed Vault accounts. |
 
-Storage providers, integrations, and Vault accounts are configured through the
-UI after the pod starts. An enabled Kerberos Vault integration automatically
-starts the forwarding worker. See [`README.configure.md`](../../README.configure.md).
+Vault accounts, storage providers, and integrations can be supplied as JSON
+arrays through the three environment variables. Two alternative Deployment
+manifests show how to import them from a `vault-runtime-configuration` ConfigMap
+or Secret.
+Environment definitions are grayed out and read-only in Vault, override database
+definitions with the same name, and are loaded when the pod starts. Invalid
+definitions prevent startup. An enabled Vault integration automatically starts
+the forwarding worker. See [`README.configure.md`](../../README.configure.md).
+
+The base [`kustomization.yaml`](./kustomization.yaml) includes the plaintext
+ConfigMap and standard Deployment so the demo login remains usable. The
+credential-bearing Secret and Secret-backed Deployment remain standalone:
+
+- [`vault-runtime-configuration-configmap.yaml`](./vault-runtime-configuration-configmap.yaml)
+  contains the demo Vault login and MQTT defaults. Its provider, integration,
+  and account arrays are `[]`, so those resources remain managed through the UI
+  and database. ConfigMap values are plaintext.
+- [`vault-runtime-configuration-secret.yaml`](./vault-runtime-configuration-secret.yaml)
+  stores the same eight variables with `stringData`, so values can be entered
+  without manual base64 encoding. Use an external secret manager or encrypted
+  GitOps workflow in production.
+
+For direct `kubectl` installation, apply one matching pair in the Vault
+namespace. Replace every Secret example credential first. Both Deployment
+manifests manage `Deployment/vault`; choose one and do not apply both.
+
+```bash
+# Plaintext local-development variant:
+kubectl apply -n kerberos-vault \
+  -f ./vault-runtime-configuration-configmap.yaml
+kubectl apply -n kerberos-vault \
+  -f ./kerberos-vault-deployment.yaml
+
+# Recommended Secret-backed variant:
+kubectl apply -n kerberos-vault \
+  -f ./vault-runtime-configuration-secret.yaml
+kubectl apply -n kerberos-vault \
+  -f ./kerberos-vault-deployment-with-secrets.yaml
+```
+
+Restart the Deployment after changing any value. Leave a key absent or set it
+to `[]` to use only database definitions for that resource type. Switching
+variants is also an `apply`: the selected manifest replaces the existing
+`Deployment/vault` definition.
 
 ## Deploy with kubectl without Kustomize
 
@@ -143,7 +192,9 @@ kubectl apply -f ../namespaces/kerberos-vault.yaml
 # 2. Review the database settings, then create the ConfigMap.
 kubectl apply -n kerberos-vault -f ./mongodb-configmap.yaml
 
-# 3. Deploy Vault and expose it through NodePort.
+# 3. Optionally apply the plaintext runtime configuration, then deploy Vault.
+# For the Secret-backed alternative, use the matching pair documented above.
+# kubectl apply -n kerberos-vault -f ./vault-runtime-configuration-configmap.yaml
 kubectl apply -n kerberos-vault -f ./kerberos-vault-deployment.yaml
 kubectl apply -n kerberos-vault -f ./kerberos-vault-service.yaml
 ```
