@@ -68,3 +68,4 @@ Based on your technology experience and preferences, you can choose from the fol
 Or provision the infrastructure yourself with infrastructure as code:
 
 - [[AWS] Terraform: EKS cluster + Amazon DocumentDB](./modules/amazon-eks-documentdb/README.md)
+- [[Azure] Terraform: Event Hub with 10 partitions](./modules/azure-event-hub/README.md)
