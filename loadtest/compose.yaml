@@ -1,0 +1,103 @@
+name: uug-loadtest
+
+x-worker-environment: &worker-environment
+  ENVIRONMENT: disposable-local-loadtest
+  LOG_LEVEL: error
+  RABBITMQ_HOST: rabbitmq:5672
+  RABBITMQ_EXCHANGE: ""
+  RABBITMQ_USERNAME: loadtest
+  # Public disposable test credentials, never production credentials.
+  RABBITMQ_PASSWORD: disposable-loadtest-only
+  MONGODB_URI: "mongodb://mongo:27017/Kerberos?replicaSet=loadtest-rs&readConcernLevel=majority&w=majority&journal=true&wtimeoutMS=10000"
+  MONGODB_DATABASE_CLOUD: Kerberos
+  MONGODB_RETRY_WRITES: "true"
+  OTEL_SDK_DISABLED: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: ""
+
+x-worker: &worker
+  networks:
+    - loadtest
+  restart: "no"
+  depends_on:
+    mongo-init:
+      condition: service_completed_successfully
+    rabbitmq:
+      condition: service_healthy
+  environment: *worker-environment
+
+services:
+  mongo:
+    image: ${LOADTEST_MONGODB_IMAGE:-mongo:8.0.13}
+    command: ["mongod", "--replSet", "loadtest-rs", "--bind_ip_all", "--noauth"]
+    ports:
+      - "127.0.0.1:${LOADTEST_MONGODB_PORT:-27028}:27017"
+    networks:
+      - loadtest
+    volumes:
+      - mongo-data:/data/db
+      - mongo-config:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "quit(db.adminCommand({ping: 1}).ok ? 0 : 1)"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  mongo-init:
+    image: ${LOADTEST_MONGODB_IMAGE:-mongo:8.0.13}
+    command:
+      - mongosh
+      - "mongodb://mongo:27017/admin?directConnection=true"
+      - --quiet
+      - --file
+      - /init/replica-set.js
+    networks:
+      - loadtest
+    volumes:
+      - ./replica-set.js:/init/replica-set.js:ro
+    restart: "no"
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  rabbitmq:
+    image: ${LOADTEST_RABBITMQ_IMAGE:-rabbitmq:4.1.4-management}
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: loadtest
+      RABBITMQ_DEFAULT_PASS: disposable-loadtest-only
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "127.0.0.1:${LOADTEST_RABBITMQ_PORT:-5673}:5672"
+      - "127.0.0.1:${LOADTEST_RABBITMQ_MANAGEMENT_PORT:-15673}:15672"
+    networks:
+      - loadtest
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping && rabbitmq-diagnostics -q check_port_connectivity && rabbitmq-diagnostics -q check_local_alarms"]
+      interval: 10s
+      timeout: 15s
+      retries: 30
+      start_period: 20s
+
+  event:
+    <<: *worker
+    image: ${LOADTEST_EVENT_IMAGE:-ghcr.io/uug-ai/hub-pipeline-event:v1.3.2}
+
+  monitor:
+    <<: *worker
+    image: ${LOADTEST_MONITOR_IMAGE:-ghcr.io/uug-ai/hub-pipeline-monitor:v1.3.19}
+
+  sequence:
+    <<: *worker
+    image: ${LOADTEST_SEQUENCE_IMAGE:-ghcr.io/uug-ai/hub-pipeline-sequence:v1.7.1}
+
+networks:
+  loadtest:
+    internal: true
+
+volumes:
+  mongo-data:
+  mongo-config:
+  rabbitmq-data:
