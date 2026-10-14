@@ -513,6 +513,7 @@ kerberospipeline:
         memory: 50Mi
         cpu: 50m
   dominantColor:
+    enabled: true # Enable or disable dominant color extraction 'true' or 'false'
     repository: ghcr.io/uug-ai/hub-pipeline-dominantcolors
     pullPolicy: IfNotPresent
     tag: "v2.0.3"
