@@ -17,6 +17,21 @@ The Kerberos.io stack offers flexible installation options, supporting deploymen
 
 This repository continuously tests the Kerberos.io deployment using GitHub Actions across various platforms. Refer to the badges for an overview of the operating systems and Kubernetes distributions we are deploying to. We welcome suggestions for additional automations to consider.
 
+### Hardened Hub frontend
+
+The promoted frontend image requires Hub chart **0.170.0 or newer**, which
+provides port `8080`, non-root/read-only runtime settings and a writable `/tmp`
+mount. Both primary and demo frontends use these settings; Admin remains on its
+legacy image and port `80`. Keep `global.imageRegistry` empty for the supplied
+fully qualified `ghcr.io` image names. Service ports remain `80` and the frontend
+NodePort remains `32080`, targeting the container port named `http`.
+
+Run `bash scripts/check-hub-runtime.sh` to check the published chart with these
+values before installation, or pass a local chart path as the first argument.
+When adding custom branding mounts, preserve the chart's `frontend-tmp` volume
+and `/tmp` mount. Existing deployments may require the explicit
+[HTTP port migration](https://github.com/kerberos-io/helm-charts/blob/main/charts/hub/README.md#recovering-a-duplicate-http-port-during-upgrades).
+
 ## Architecture
 
 As previously indicated, several integral components, including Object Storage, Database, and Message Brokers, are deployed and configured to ensure the proper functionality of Kerberos.io. The architecture diagrams below aims to provide a visual representation of these components and their interactions with one another depending the deployment; self-hosted or managed cloud deployment.
