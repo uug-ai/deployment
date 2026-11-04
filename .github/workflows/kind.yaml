@@ -105,24 +105,7 @@ jobs:
           kubectl create namespace kerberos-hub
           helm install hub kerberos/hub --values ./base/hub/kerberos-hub-values.yaml -n kerberos-hub --create-namespace
           sleep 10
-          kubectl wait --for=condition=available deployment/admin -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/hub-api -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/hub-cleanup -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/hub-frontend -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/hub-frontend-demo -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/hub-monitor-device -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/hub-reactivate-subscription -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-analysis -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-counting -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-dominantcolor -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-event -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-export -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-monitor -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-notify -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-notify-test -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-sequence -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-sprite -n kerberos-hub --timeout=300s
-          kubectl wait --for=condition=available deployment/pipe-throttler -n kerberos-hub --timeout=300s
+          kubectl wait --for=condition=available deployment --all -n kerberos-hub --timeout=300s
           kubectl get pods -A -o wide
       - name: Collect deployment diagnostics
         if: failure()
