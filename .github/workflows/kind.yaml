@@ -27,6 +27,10 @@ jobs:
           kubectl get sc
       - name: Checkout repository
         uses: actions/checkout@v2
+      - name: Check promoted Hub runtime
+        run: |
+          helm repo add kerberos https://charts.kerberos.io
+          bash scripts/check-hub-runtime.sh
       - name: Install OpenEBS
         run: |
           kubectl apply -f https://openebs.github.io/charts/openebs-operator.yaml

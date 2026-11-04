@@ -19,7 +19,7 @@ licenseServer:
 
 # When using a private registry, you can specify the registry here.
 global:
-  imageRegistry: "docker.io/"
+  imageRegistry: ""
 # Environment: set to 'production', 'develop', 'demo', 'staging' or 'acceptance'.
 # Set to 'true' if this is a private deployment.
 environment: "production"
@@ -241,6 +241,8 @@ kerberoshub:
     repository: ghcr.io/uug-ai/hub-frontend
     pullPolicy: IfNotPresent
     tag: "v1.19.28"
+    # Requires Hub chart 0.170.0+ for the matching hardened runtime defaults.
+    containerPort: 8080
     replicas: 1
     schema: "http"
     url: "yourdomain.com"
