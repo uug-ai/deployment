@@ -9,7 +9,7 @@ spec:
   type: NodePort
   ports:
     - port: 80
-      targetPort: 80
+      targetPort: http
       nodePort: 32080 # You can specify a port in the range 30000-32767 or let Kubernetes assign one automatically
       name: frontend
       protocol: TCP

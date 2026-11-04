@@ -17,6 +17,62 @@ The Kerberos.io stack offers flexible installation options, supporting deploymen
 
 This repository continuously tests the Kerberos.io deployment using GitHub Actions across various platforms. Refer to the badges for an overview of the operating systems and Kubernetes distributions we are deploying to. We welcome suggestions for additional automations to consider.
 
+### Upgrading to hardened Hub images
+
+Upgrade the chart and image runtime settings together, not just the image tags.
+Use chart `0.167.3` or newer for hardened Admin and worker runtime settings
+(`0.167.2` or newer for both primary and demo frontends). The base Hub values
+still select legacy images; do not apply hardened settings indiscriminately to
+legacy or custom images.
+
+For a compatible hardened frontend, merge this into your Hub values:
+
+```yaml
+kerberoshub:
+  frontend:
+    containerPort: 8080
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 65532
+      runAsGroup: 65532
+      readOnlyRootFilesystem: true
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop: ["ALL"]
+      seccompProfile:
+        type: RuntimeDefault
+    volumes:
+      - name: frontend-tmp
+        emptyDir:
+          medium: Memory
+          sizeLimit: 16Mi
+    volumeMounts:
+      - name: frontend-tmp
+        mountPath: /tmp
+```
+
+Select your verified hardened image tag alongside these settings. Preserve any
+existing branding/translation volumes and mounts when merging the lists. These
+settings also apply to the demo frontend. Admin uses the **top-level** `admin`
+values key, not `kerberoshub.admin`; configure its image, port, scratch mount and
+security context separately. See the
+[chart runtime documentation](https://github.com/kerberos-io/helm-charts/blob/master/charts/hub/README.md)
+for Admin, health probes and per-worker settings.
+
+The frontend Service and NodePort still expose port `80` and node port `32080`;
+their target must be the container port named `http`, which resolves to `80`
+for legacy images or `8080` for hardened images. Reapply
+[the NodePort manifest](./base/hub/kerberos-hub-nodeports.yaml) when upgrading an
+existing deployment. A numeric target of `80` causes connection failures with
+hardened images even when the pod is running. Rollbacks must restore the legacy
+port and remove incompatible security contexts/probes along with the image tag.
+
+Run the cluster-free routing regression check against a local chart checkout:
+
+```sh
+bash scripts/check-hub-runtime.sh ../helm-charts/charts/hub
+```
+
 ## Architecture
 
 As previously indicated, several integral components, including Object Storage, Database, and Message Brokers, are deployed and configured to ensure the proper functionality of Kerberos.io. The architecture diagrams below aims to provide a visual representation of these components and their interactions with one another depending the deployment; self-hosted or managed cloud deployment.
