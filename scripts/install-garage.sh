@@ -21,8 +21,14 @@ if [[ -z "$secret" ]]; then
     --from-literal="secret-key=$(openssl rand -hex 32)"
 fi
 
-kubectl -n garage get secret garage-credentials -o json |
-  jq -e '.data | all(."rpc-secret", ."access-key", ."secret-key"; type == "string" and length > 0)' > /dev/null
+if ! kubectl -n garage get secret garage-credentials -o json |
+  jq -e '.data |
+    (."rpc-secret" | @base64d | test("^[0-9a-f]{64}$")) and
+    (."access-key" | @base64d | test("^GK[0-9a-f]{32}$")) and
+    (."secret-key" | @base64d | test("^[0-9a-f]{64}$"))' > /dev/null; then
+  echo "Garage credentials are missing or invalid; restore a valid garage-credentials Secret." >&2
+  exit 1
+fi
 if [[ $# -eq 1 ]]; then
   echo "Garage credentials are ready; apply your Kustomize overlay next."
   exit 0

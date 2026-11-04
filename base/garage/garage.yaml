@@ -10,7 +10,6 @@ data:
     replication_factor = 1
     rpc_bind_addr = "127.0.0.1:3901"
     rpc_public_addr = "127.0.0.1:3901"
-    rpc_secret_file = "/secrets/rpc-secret"
 
     [s3_api]
     s3_region = "garage"
@@ -65,6 +64,11 @@ spec:
             seccompProfile:
               type: RuntimeDefault
           env:
+            - name: GARAGE_RPC_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: garage-credentials
+                  key: rpc-secret
             - name: GARAGE_DEFAULT_ACCESS_KEY
               valueFrom:
                 secretKeyRef:
@@ -86,8 +90,8 @@ spec:
             periodSeconds: 2
             failureThreshold: 60
           readinessProbe:
-            tcpSocket:
-              port: s3
+            exec:
+              command: ["/garage", "health"]
           livenessProbe:
             tcpSocket:
               port: s3
@@ -102,9 +106,6 @@ spec:
               mountPath: /etc/garage.toml
               subPath: garage.toml
               readOnly: true
-            - name: credentials
-              mountPath: /secrets
-              readOnly: true
             - name: data
               mountPath: /var/lib/garage
             - name: tmp
@@ -113,13 +114,6 @@ spec:
         - name: config
           configMap:
             name: garage
-        - name: credentials
-          secret:
-            secretName: garage-credentials
-            defaultMode: 0440
-            items:
-              - key: rpc-secret
-                path: rpc-secret
         - name: tmp
           emptyDir:
             sizeLimit: 16Mi

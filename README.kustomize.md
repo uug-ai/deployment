@@ -86,7 +86,6 @@ microk8s enable dns
 microk8s enable dashboard
 microk8s enable nvidia
 microk8s enable hostpath-storage
-microk8s enable minio
 ```
 
 You can verify the status of the enabled addons by running the following command:
@@ -103,7 +102,7 @@ kubectl get po -w -A
 
 ### Clone repository
 
-Next, we will clone this repository to our local environment. This will allow us to execute the necessary configuration files for installing the Minio operator, MongoDB Helm chart, and other required components.
+Next, clone this repository for the Garage S3 manifests, MongoDB Helm chart values, and other required components.
 
 ```bash
 git clone https://github.com/kerberos-io/deployment
@@ -111,6 +110,13 @@ cd deployment
 ```
 
 ## Kustomize
+
+The default base uses [Garage S3](./base/garage/README.md). Before a native
+Kustomize apply, run `bash scripts/install-garage.sh --prepare-only` to create
+its namespace and persistent credentials. `configure.sh apply` does this
+automatically. Do not enable the MinIO addon for this default stack. Existing
+MinIO installations must keep their backend/provider settings until their data
+is explicitly migrated; do not prune their storage resources.
 
 In contrast to the detailed installation instructions, as mentioned here, an easier option to install is to use our Kustomize configure. This will allow you to specify and create your own overlays to install all the different components through a single command line.
 
@@ -185,7 +191,7 @@ namespace/kerberos-agent unchanged
 namespace/kerberos-factory unchanged
 namespace/kerberos-hub unchanged
 namespace/kerberos-vault unchanged
-namespace/minio-tenant unchanged
+namespace/garage unchanged
 namespace/mongodb unchanged
 namespace/rabbitmq unchanged
 namespace/vernemq unchanged

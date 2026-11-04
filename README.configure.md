@@ -24,16 +24,17 @@ With the Vault installed, we can proceed to configure the various components. Cu
 
 ![Configure Vault](./assets/images/configure-vault.gif)
 
-- Navigate to the `Storage Providers` menu and select the (+ Add Storage Provider) button. A modal will appear where you can input the required details. After entering the information, click the "Verify" button to ensure the configuration is valid. Once you receive a "Configuration is valid and working" message, click the "Add Storage Provider" button to complete the process. **_(!You are advised to generate more complex access and secret key for Minio, this is just for demo purposes, do not use this in production)_**
+- Navigate to the `Storage Providers` menu and select the (+ Add Storage Provider) button. Verify and add the provider using the [Garage setup guide](./base/garage/README.md). These settings apply to the default Kubernetes installation; retain the matching provider settings for an existing MinIO or Docker installation.
 
-  - Minio
+  - MinIO/S3-compatible provider type (Garage backend)
     - Enabled: true
-    - Provider name: minio
+    - Provider name: garage
     - Bucket name: mybucket
-    - Region: na
-    - Hostname: myminio-hl.minio-tenant:9000
-    - Access key: minio
-    - Secret key: minio123
+    - Region: garage
+    - Hostname: garage.garage:3900
+    - SSL: false
+    - Access key: `access-key` from Secret `garage/garage-credentials`
+    - Secret key: `secret-key` from the same Secret
 
 - Navigate to the `Integrations` menu and select the (+ Add Integration) button. A modal will appear where you can input the required details. After entering the information, click the "Verify" button to ensure the configuration is valid. Once you receive a "Configuration is valid and working" message, click the "Add Integration" button to complete the process. **_(!You are advised to generate more complex username and password for RabbitMQ, this is just for demo purposes, do not use this in production)_**
 
@@ -50,7 +51,7 @@ With the Vault installed, we can proceed to configure the various components. Cu
 
   - Enabled: true
   - Account name: myaccount
-  - Main provider: minio
+  - Main provider: garage
   - Day limit: 30
   - Integration: rabbitmq
   - Directory: \*

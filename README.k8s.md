@@ -116,7 +116,7 @@ When installing the Kerberos.io stack, several dependencies are required for sto
 
 ### Clone repository
 
-Next, we will clone this repository to our local environment. This will allow us to execute the necessary configuration files for installing the Minio operator, MongoDB Helm chart, and other required components.
+Next, clone this repository for the Garage S3 manifests, MongoDB Helm chart values, and other required components.
 
 ```bash
 git clone https://github.com/kerberos-io/deployment
@@ -127,7 +127,21 @@ cd deployment
 
 When you create a Kubernetes cluster using `kubeadm` on a bare metal machine
 
-### Object storage: MinIO
+### Object storage: Garage (default)
+
+After creating the `ssd-hostpath` StorageClass for your provisioner, run:
+
+```sh
+bash scripts/install-garage.sh
+bash scripts/check-garage.sh
+```
+
+See the [Garage guide](./base/garage/README.md) for generated credentials,
+Vault provider settings, persistence and existing MinIO compatibility. Garage
+uses S3 port `3900` internally and NodePort `30090`; it needs no operator.
+Skip the following legacy section when using the default installation.
+
+### Optional legacy object storage: MinIO
 
 MinIO is a high-performance, distributed object storage system that is compatible with Amazon S3 cloud storage service. It is designed to handle large-scale data storage and retrieval, making it an ideal choice for modern cloud-native applications.
 
@@ -318,14 +332,19 @@ With the Kerberos Vault installed, we can proceed to configure the various compo
 
 - Navigate to the `Storage Providers` menu and select the (+ Add Storage Provider) button. A modal will appear where you can input the required details. After entering the information, click the "Verify" button to ensure the configuration is valid. Once you receive a "Configuration is valid and working" message, click the "Add Storage Provider" button to complete the process.
 
-  - Minio
+  - MinIO/S3-compatible provider type (Garage backend)
     - Enabled: true
-    - Provider name: minio
+    - Provider name: garage
     - Bucket name: mybucket
-    - Region: na
-    - Hostname: myminio-hl.minio-tenant:9000
-    - Access key: minio
-    - Secret key: minio123
+    - Region: garage
+    - Hostname: garage.garage:3900
+    - SSL: false
+    - Access key: `access-key` from Secret `garage/garage-credentials`
+    - Secret key: `secret-key` from the same Secret
+
+For the optional legacy MinIO installation, retain that backend's hostname,
+credentials and provider name instead. See the [Garage guide](./base/garage/README.md)
+before switching an existing installation.
 
 - Navigate to the `Integrations` menu and select the (+ Add Integration) button. A modal will appear where you can input the required details. After entering the information, click the "Verify" button to ensure the configuration is valid. Once you receive a "Configuration is valid and working" message, click the "Add Integration" button to complete the process.
 
@@ -342,7 +361,7 @@ With the Kerberos Vault installed, we can proceed to configure the various compo
 
   - Enabled: true
   - Account name: myaccount
-  - Main provider: minio
+  - Main provider: garage (or the retained provider for an existing installation)
   - Day limit: 30
   - Integration: rabbitmq
   - Directory: \*
