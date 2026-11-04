@@ -8,6 +8,7 @@ jobs:
   deploy:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
         #kind: [v0.21.0, v0.22.0, v0.23.0, v0.24.0, v0.25.0]
@@ -128,6 +129,14 @@ jobs:
           kubectl wait --for=condition=available deployment/pipe-sprite -n kerberos-hub --timeout=300s
           kubectl wait --for=condition=available deployment/pipe-throttler -n kerberos-hub --timeout=300s
           kubectl get pods -A -o wide
+      - name: Collect deployment diagnostics
+        if: failure()
+        run: |
+          kubectl get pods,pvc -A -o wide
+          kubectl get events -A --sort-by=.lastTimestamp
+          kubectl -n minio-tenant describe pods
+          kubectl -n minio-operator logs -l name=minio-operator --all-containers=true --tail=100
+          kubectl -n minio-tenant logs myminio-pool-0-0 --all-containers=true --tail=100
       - name: Send Slack Notification on Success
         if: success()
         env:
