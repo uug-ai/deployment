@@ -48,7 +48,7 @@ module "eks" {
 ###############################################################################
 # EBS CSI driver
 #
-# Kerberos Hub's supporting components (RabbitMQ, VerneMQ, MinIO, ...) claim
+# Hub's supporting components (RabbitMQ, VerneMQ, MinIO, ...) claim
 # persistent volumes, so the cluster needs a working CSI driver.
 ###############################################################################
 

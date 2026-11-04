@@ -1,4 +1,4 @@
-Kerberos.io
+Hub
 ------------
 
 A case has been shared with you
@@ -16,6 +16,6 @@ support@kerberos.io
 9000 Ghent, BE
 https://kerberos.io
 
-About Kerberos
+About the ecosystem
 ------------
 Welcome to the revolutionary video analytics and video management platform. Open, modular, and extensible for everyone, anywhere.

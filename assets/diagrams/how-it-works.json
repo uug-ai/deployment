@@ -1,0 +1,35 @@
+{
+  "groups": [
+    { "id": "capture", "label": "1. Camera processing - edge / cloud", "x": 0, "y": 20, "w": 540, "h": 520 },
+    { "id": "persistence", "label": "2. Persistence - edge / cloud", "x": 620, "y": 20, "w": 300, "h": 520 },
+    { "id": "analysis", "label": "3. Analyse - edge / cloud", "x": 1000, "y": 20, "w": 300, "h": 520 }
+  ],
+  "nodes": [
+    { "id": "camera-1", "kind": "camera", "x": 30, "y": 230, "w": 180, "h": 140,
+      "header": "CAMERA", "title": "Camera 1", "subtitle": "RTSP stream" },
+    { "id": "camera-2", "kind": "camera", "x": 30, "y": 390, "w": 180, "h": 140,
+      "header": "CAMERA", "title": "Camera 2", "subtitle": "RTSP stream" },
+    { "id": "factory", "kind": "factory", "x": 280, "y": 60, "w": 230, "h": 140,
+      "header": "ORCHESTRATE", "title": "Factory", "subtitle": "Manage on Kubernetes" },
+    { "id": "agent-1", "kind": "agent", "x": 280, "y": 230, "w": 230, "h": 140,
+      "header": "RECORD", "title": "Agent 1", "subtitle": "Process one camera" },
+    { "id": "agent-2", "kind": "agent", "x": 280, "y": 390, "w": 230, "h": 140,
+      "header": "RECORD", "title": "Agent 2", "subtitle": "Process one camera" },
+    { "id": "vault", "kind": "vault", "x": 650, "y": 230, "w": 240, "h": 140,
+      "header": "STORE", "title": "Vault", "subtitle": "Store and integrate" },
+    { "id": "storage", "kind": "storage", "x": 650, "y": 390, "w": 240, "h": 140,
+      "header": "OBJECT STORAGE", "title": "Storage backend", "subtitle": "Cloud / edge" },
+    { "id": "hub", "kind": "hub", "x": 1030, "y": 230, "w": 240, "h": 140,
+      "header": "ANALYSE", "title": "Hub", "subtitle": "Monitor and analyse" }
+  ],
+  "connections": [
+    { "from": "camera-1", "to": "agent-1", "fromSide": "right", "toSide": "left" },
+    { "from": "camera-2", "to": "agent-2", "fromSide": "right", "toSide": "left" },
+    { "from": "factory", "to": "agent-1", "fromSide": "bottom", "toSide": "top", "kind": "dashed" },
+    { "from": "factory", "to": "agent-2", "fromSide": "right", "toSide": "right", "kind": "dashed" },
+    { "from": "agent-1", "to": "vault", "fromSide": "right", "toSide": "left" },
+    { "from": "agent-2", "to": "vault", "fromSide": "right", "toSide": "left" },
+    { "from": "vault", "to": "storage", "fromSide": "bottom", "toSide": "top" },
+    { "from": "vault", "to": "hub", "fromSide": "right", "toSide": "left", "label": "Events" }
+  ]
+}

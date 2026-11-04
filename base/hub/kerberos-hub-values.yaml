@@ -3,7 +3,7 @@
 # Declare variables to be passed into your templates.
 
 ###########################################################################
-# LICENSING information: you will a license to run Kerberos Hub.
+# LICENSING information: you will a license to run Hub.
 # ----
 # Get your license from support@kerberos.io
 #license: "---ENTER-YOUR-LICENSE-HERE---"
@@ -11,7 +11,7 @@
 license: "L/+DAwEBB2xpY2Vuc2UB/4QAAQIBB1BheWxvYWQBCgABCVNpZ25hdHVyZQEKAAAA/gMk/4QB/gEZ/8sQACxnaXRodWIuY29tL3V1Zy1haS9odWItbGljZW5zZS9tb2RlbHMuTGljZW5zZX8DAQEHTGljZW5zZQH/gAABDAECSWQB/4IAAQNLZXkBDAABB0NvbXBhbnkBDAABB0V4cFRpbWUBBAABBERheXMBBAABB0NhbWVyYXMBBAABBVNpdGVzAQQAAQZWYXVsdHMBBAABCk1lZGlhTGltaXQBBAABCVBlcnBldHVhbAECAAEGQWN0aXZlAQIAAQlJcEFkZHJlc3MBDAAAABj/gQEBAQhPYmplY3RJRAH/ggABBgEYAAAy/4AvAQwAAAAAAAAAAAAAAAACDGZyZWUtbGljZW5zZQH81iZi6gH+AtoBEAEUARQDAQAB/gIAfeXxQb6kaPfAgOWeSAE6qEiQviFD6sciNmNfMel1mEL53FeV0GQe4cYBip9wyJag35az8A1yppxSymZD5V4my2FckyN2zmEW4E2sO/v+8eKepiAGYEzrKtfNCLxdWLmrHd0zjYQ3qk+PNfoPyzCOefeulw3aFsqBlzg9wDkF8cRx6tUW0qNTzki6sFGOuLoxS49cWqsftAvZmt+CRWa8u0VArIAjOpywN0RIZCkEYzp5RYF3LSVyWYEyvVhjE19DDnevzpJyCHRsIHTRcpTQkhboeapOdlEz8cx+PaOvxktN8hBWceTAH+nw96FARG7y6Cpjw3xo+NV1xb0tvRXGaGoK77JnErKLhd/haXji98rGvMakDt18WSbQfTVS84+Fw+/gKGsW3uS3fROAaZw1kZj4PgsEPZDvbVkCVyuS0O87UoYqpxH8S4by8cTF3wDP7FwyIRZbEbYjN2wzHSmlADYOBtdsdb1VGm7wvtB85vML9n7ZSlIpJdqfci06mGks102mDyG2LRMhUEvpUW3D/weErIvj2WiAwf6r0EUj+LO8VmAsYkME9da7FXEN6Vg/5f1u485LOpYki332RaDOhDn2eMG9DVb/HnmQSFagX+XXc/QwfsWiehCgKYGk4jQpyklTqoGu8BAt6Sm8CaoH8ngZ3cHLQT5DcZElV36/N/wA"
 licenseServer:
   url: "https://license.kerberos.io/verify"
-  token: "214%ˆ#ddfsf@#3rfdsgl_)23sffeqasSwefDSFNBM" # do not change otherwise Kerberos Hub will not work.
+  token: "214%ˆ#ddfsf@#3rfdsgl_)23sffeqasSwefDSFNBM" # do not change otherwise Hub will not work.
 # Private Docker Registry: The registry secret is required if you have your Docker images behind a private registry.
 # By default it will pull from Docker hub (https://hub.docker.com/r/kerberos).
 #imagePullSecrets:
@@ -26,7 +26,7 @@ environment: "production"
 # Set to 'true' if this is a private deployment.
 isPrivate: true
 # If you plan a migration or doing maintenance, you can enable readonly.
-# This will stop any write process to mongodb or any processing done in the Kerberos Hub pipeline.
+# This will stop any write process to mongodb or any processing done in the Hub pipeline.
 readOnly: false
 # Which network ingress you are using in your Kubernetes Cluster
 # Leaving the ingress empty will disable the ingress.
@@ -42,10 +42,10 @@ mongodb:
   username: "root"
   password: "yourpassword"
 # A MQTT broker (vernemq or other like mosquitto) is used to have a bi-directional
-# communication between Agents and Kerberos Hub.
+# communication between Agents and Hub.
 # we recommend to use vernemq (as part of this installation), but a stand-alone mosquitto broker is also possible.
 mqtt:
-  host: "mqtt.yourdomain.com" # this needs to be a public accessible DNS name (it's used to communicate between Agents and Kerberos Hub)
+  host: "mqtt.yourdomain.com" # this needs to be a public accessible DNS name (it's used to communicate between Agents and Hub)
   port: "31443"
   protocol: "wss"
   username: "yourusername"
@@ -85,8 +85,8 @@ turn:
 openai:
   enabled: false
   apikey: "xxx"
-# We have a kerberos vault component installed which contains all the
-# recordings. Kerberos vault is queried to retrieve the recordings
+# We have a Vault component installed which contains all the
+# recordings. Vault is queried to retrieve the recordings
 # from the appropriate provider.
 
 kerberosvault:
@@ -124,23 +124,23 @@ email:
     password: "yourpassword"
   templates:
     welcome: "welcome"
-    welcomeTitle: "Welcome to Kerberos Hub"
+    welcomeTitle: "Welcome to Hub"
     activate: "activate"
-    activateTitle: "Wonderful! Your Kerberos Hub is now active"
+    activateTitle: "Wonderful! Your Hub is now active"
     forgot: "forgot"
-    forgotTitle: "Password reset Kerberos Hub. You forgot your password"
+    forgotTitle: "Password reset Hub. You forgot your password"
     share: "share"
-    shareTitle: "[Action] You received a recording from Kerberos Hub"
+    shareTitle: "[Action] You received a recording from Hub"
     caseShare: "share_case"
-    caseShareTitle: "[Action] A case has been shared with you on Kerberos Hub"
+    caseShareTitle: "[Action] A case has been shared with you on Hub"
     detection: "detection"
     disabled: "disabled"
     highupload: "highupload"
     device: "device"
-    alertTitle: "[Alert] Kerberos Hub detected something an event"
+    alertTitle: "[Alert] Hub detected something an event"
     deviceTitle: "[Device] An Agent's status has been changed"
 # Following are all the different deployments needed to make
-# Kerberos hub properly working.
+# Hub properly working.
 kerberoshub:
   admin:
     repository: uugai/admin
@@ -182,8 +182,8 @@ kerberoshub:
     #legacyUrl: "api.legacy.yourdomain.com"
 
     # MFA issuer name
-    mfaIssuer: "Kerberos.io"
-    # Admin API's are made available for automation of Kerberos Hub.
+    mfaIssuer: "Hub"
+    # Admin API's are made available for automation of Hub.
     # To access those API's (e.g. creation of owner users), an API key needs to be provided.
     apiKey: "Z6GPfDdYj8mxLyy6iUJVf9yBlri9lhsW"
     ## Certificates
@@ -199,20 +199,20 @@ kerberoshub:
     #    secretName: kerberoshub-admin
     language: "english"
     fallbackLanguage: "english"
-    # Legacy (reseller) it is possible to link to AWS S3 and IAM (however Kerberos Vault is now the recommended option).
-    # This is primarily used for creation of subscriptions, and not needed if you are using mainly Kerberos Vault.
+    # Legacy (reseller) it is possible to link to AWS S3 and IAM (however Vault is now the recommended option).
+    # This is primarily used for creation of subscriptions, and not needed if you are using mainly Vault.
     aws:
       region: "xxx"
       bucket: "xxx"
       accessKey: "xxx"
       secretKey: "xxx"
-    stripe: # We use stripe for billing, so it's possible to resell Kerberos Hub if agreed.
+    stripe: # We use stripe for billing, so it's possible to resell Hub if agreed.
       privateKey: "xxx"
     slack: # Slack is used in the api, to send logs to a specific Slack channel.
       enabled: "true"
       hook: "yourslackhook" # https://hooks.slack.com/services/T08Q2Q9V5/xxKT/JALxxAk26bHtuqTfZ
-      username: "Kerberos Hub" # The slack username
-    elasticsearch: # Logs of the kerberos hub will be send to an elastic search cluster.
+      username: "Hub" # The slack username
+    elasticsearch: # Logs of the Hub will be send to an elastic search cluster.
       enabled: "false"
       protocol: "http"
       host: "yourelasticsearchinstance.com"
@@ -275,7 +275,7 @@ kerberoshub:
       apikey: "xxx"
     sentry: # We can trace errors in Sentry
       url: "https://xxx@sentry.io/xxx"
-    stripe: # We use stripe for billing, so it's possible to resell Kerberos Hub if agreed.
+    stripe: # We use stripe for billing, so it's possible to resell Hub if agreed.
       publicKey: ""
     googlemaps: # Google maps is used inside the application to visualise cameras and sites.
       apikey: "xxxx"
@@ -288,15 +288,15 @@ kerberoshub:
     # in a white-label setup, or where you are managing the Agents for your customers.
     hideAddAgent: "true"
     # Multi tenancy (domains)
-    # By default the Kerberos Hub allows multi-tenancy through the concept
+    # By default the Hub allows multi-tenancy through the concept
     # of accounts and subaccounts. However through the concept of domains, you
     # take it a step further. Within a domain, user accounts are unique, and are prefixed by a (domain\).
     #multiTenant: true
     #tenantBaseDomain: "yourdomain.com" # this would resolve in following sub domain "https://domain.kerberos.io"
 
     # Page title (browser)
-    title: "Kerberos Hub - Video surveillance as it should be"
-    # You can style Kerberos hub as you wish.
+    title: "Hub - Video surveillance as it should be"
+    # You can style Hub as you wish.
     # 1. we do the styling on our side and bake it in the Docker image (change the logo attribute to your company name)
     # 2. you bring your own logo (set logo to 'custom'), and mount the css file and favicons.
     # we will need to include your logo in the Docker image, so please reach out to us.
@@ -312,7 +312,7 @@ kerberoshub:
     #    persistentVolumeClaim:
     #      claimName: custom-layout-claim
     # By specifying the below environments variables, you can tweak the
-    # headings and paragraphs of Kerberos Hub front-end.
+    # headings and paragraphs of Hub front-end.
     # Login page
     loginDescription: ""
     loginCopyright: ""
@@ -535,7 +535,7 @@ kerberospipeline:
     width: "600"
     height: "-1"
     kerberosvault:
-      enabled: true # If you want to use Kerberos Vault to store the thumbnails
+      enabled: true # If you want to use Vault to store the thumbnails
     resources:
       requests:
         memory: 50Mi

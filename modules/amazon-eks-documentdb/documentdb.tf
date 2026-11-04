@@ -6,7 +6,7 @@
 #
 #   curl -O https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
 #
-# For Kerberos Hub that bundle is mounted through the helm chart's
+# For Hub that bundle is mounted through the helm chart's
 # `mongodb.tls` values, see the README next to this file.
 ###############################################################################
 
@@ -28,7 +28,7 @@ locals {
 
 resource "aws_security_group" "docdb" {
   name        = "${local.name}-docdb"
-  description = "MongoDB wire protocol access to the Kerberos Hub DocumentDB cluster"
+  description = "MongoDB wire protocol access to the Hub DocumentDB cluster"
   vpc_id      = module.vpc.vpc_id
 
   tags = merge(local.tags, { Name = "${local.name}-docdb" })
@@ -58,7 +58,7 @@ resource "aws_vpc_security_group_ingress_rule" "docdb_from_cidrs" {
 
 resource "aws_docdb_subnet_group" "this" {
   name        = local.docdb_subnet_group_name
-  description = "Private subnets of the Kerberos Hub VPC"
+  description = "Private subnets of the Hub VPC"
   subnet_ids  = module.vpc.private_subnets
 
   tags = local.tags
@@ -71,7 +71,7 @@ resource "aws_docdb_subnet_group" "this" {
 resource "aws_docdb_cluster_parameter_group" "this" {
   name        = "${local.name}-docdb"
   family      = var.docdb_parameter_group_family
-  description = "Kerberos Hub DocumentDB parameters"
+  description = "Hub DocumentDB parameters"
 
   parameter {
     name  = "tls"

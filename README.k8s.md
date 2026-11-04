@@ -10,7 +10,7 @@
 
 Kubernetes is an open-source platform for automating the deployment, scaling, and management of containerized applications. It provides features like automated deployment, self-healing, service discovery, and storage orchestration. Kubernetes is essential for modern cloud-native application development and operations.
 
-In this tutorial, we will guide you through the installation of the Kerberos.io edge stack, which includes the Agent, Kerberos Vault, and the Data Filtering Service. This setup enables the storage of recordings from multiple cameras at the edge, facilitating local data processing and ensuring secure and efficient management of video streams.
+In this tutorial, we will guide you through installing the edge stack, which includes Agent, Vault, and the Data Filtering Service. This setup enables the storage of recordings from multiple cameras at the edge, facilitating local data processing and ensuring secure and efficient management of video streams.
 
 ## Install Kubernetes on Ubuntu with kubeadm
 
@@ -112,7 +112,7 @@ Ensure that all nodes are in the Ready state and all pods are in the Running sta
 
 ## Dependencies
 
-When installing the Kerberos.io stack, several dependencies are required for storage, such as a database (e.g., MongoDB) and a message broker (e.g., RabbitMQ) for asynchronous behavior. We will install these components before setting up the Agents and Kerberos Vault.
+When installing the ecosystem, several dependencies are required for storage, such as a database (e.g., MongoDB) and a message broker (e.g., RabbitMQ) for asynchronous behavior. We will install these components before setting up the Agents and Vault.
 
 ### Clone repository
 
@@ -145,7 +145,7 @@ Skip the following legacy section when using the default installation.
 
 MinIO is a high-performance, distributed object storage system that is compatible with Amazon S3 cloud storage service. It is designed to handle large-scale data storage and retrieval, making it an ideal choice for modern cloud-native applications.
 
-In the context of the Kerberos.io stack, MinIO will be used to store recordings from the Agents. These recordings are crucial for surveillance and monitoring purposes, and having a reliable storage solution like MinIO ensures that the data is stored securely and can be accessed efficiently.
+In the context of the ecosystem, MinIO will be used to store recordings from the Agents. These recordings are crucial for surveillance and monitoring purposes, and having a reliable storage solution like MinIO ensures that the data is stored securely and can be accessed efficiently.
 
 ```bash
 git clone --depth 1 --branch v6.0.1 https://github.com/minio/operator.git && kubectl apply -k operator/
@@ -227,7 +227,7 @@ To access the application, open your browser and navigate to `localhost:8080`. U
 
 ### Database: MongoDB
 
-When using Kerberos Vault, it will persist references to the recordings stored in your storage provider in a MongoDB database. As used before, we are using `helm` to install MongoDB in our Kubernetes cluster. Within the Kerberos Vault project we are using the latest official mongodb driver, so we support all major MongoDB versions (4.x, 5.x, 6.x, 7.x).
+When using Vault, it will persist references to the recordings stored in your storage provider in a MongoDB database. As used before, we are using `helm` to install MongoDB in our Kubernetes cluster. Within the Vault project we are using the latest official mongodb driver, so we support all major MongoDB versions (4.x, 5.x, 6.x, 7.x).
 
 Have a look into the `./mongodb-values.yaml` file, you will find plenty of configurations for the MongoDB helm chart. To change the username and password of the MongoDB instance, go ahead and [find the attribute where](https://github.com/kerberos-io/vault/blob/master/kubernetes/mongodb/values.yaml#L148) you can change the root password. Please note that we are using the official [Bitnami Mongodb helm chart](https://github.com/bitnami/charts/tree/main/bitnami/mongodb), so please use their repository for more indepth configuration.
 
@@ -276,9 +276,9 @@ View the RabbitMQ status and wait until it's properly running
 kubectl get po -w -A
 ```
 
-### Kerberos Vault
+### Vault
 
-Kerberos Vault requires a configuration to connect to the MongoDB instance. To handle this a `configmap` is defined in the `./mongodb-configmap.yaml` file. Modify the MongoDB credentials in the `./mongodb-configmap.yaml` file, and make sure they match the credentials of your MongoDB instance, as described above. There are two ways of configuring the MongoDB connection, either you provide a `MONGODB_URI` or you specify the individual variables `MONGODB_USERNAME`, `MONGODB_PASSWORD`, etc.
+Vault requires a configuration to connect to the MongoDB instance. To handle this a `configmap` is defined in the `./mongodb-configmap.yaml` file. Modify the MongoDB credentials in the `./mongodb-configmap.yaml` file, and make sure they match the credentials of your MongoDB instance, as described above. There are two ways of configuring the MongoDB connection, either you provide a `MONGODB_URI` or you specify the individual variables `MONGODB_USERNAME`, `MONGODB_PASSWORD`, etc.
 
 As mentioned above a managed MongoDB is easier to setup and manage, for example for MongoDB Atlas, you will get a MongoDB URI in the form of `"mongodb+srv://xx:xx@kerberos-hub.xxx.mongodb.net/?retryWrites=true&w=majority&appName=xxx"`. By applying this value into the `MONGODB_URI` field, you will have setup your MongoDB connection successfully.
 
@@ -302,7 +302,7 @@ Create the `kerberos-vault` namespace.
 kubectl create namespace kerberos-vault
 ```
 
-Apply the manifests, so the Kerberos Vault application is deployed and knows how to connect to the MongoDB.
+Apply the manifests, so the Vault application is deployed and knows how to connect to the MongoDB.
 
 ```bash
 kubectl apply -f ./mongodb-configmap.yaml -n kerberos-vault
@@ -318,15 +318,15 @@ kubectl get po -w -A
 
 #### Access the UI
 
-If you have opted for the `NodePort` configuration, you can access the Kerberos Vault via the `http://localhost:30080` endpoint in your browser. For server installations without a GUI, consider setting up a reverse proxy to enable browser access from your local machine. Alternatively, you may utilize a `LoadBalancer` if one is available or if you are deploying on a managed Kubernetes service.
+If you have opted for the `NodePort` configuration, you can access the Vault via the `http://localhost:30080` endpoint in your browser. For server installations without a GUI, consider setting up a reverse proxy to enable browser access from your local machine. Alternatively, you may utilize a `LoadBalancer` if one is available or if you are deploying on a managed Kubernetes service.
 
 ```bash
 ssh -L 8080:localhost:30080 user@server-ip -p 22
 ```
 
-#### Configure the Kerberos Vault
+#### Configure the Vault
 
-With the Kerberos Vault installed, we can proceed to configure the various components. Currently, this must be done through the Kerberos Vault UI, but we plan to make it configurable via environment variables, eliminating the need for manual UI configurations.
+With the Vault installed, we can proceed to configure the various components. Currently, this must be done through the Vault UI, but we plan to make it configurable via environment variables, eliminating the need for manual UI configurations.
 
 ![Configure Vault](./assets/images/configure-vault.gif)
 
@@ -370,26 +370,26 @@ before switching an existing installation.
 
 ### Create an Agent
 
-After deploying the Kerberos Vault and configuring the necessary services for storage, database, and integration, you can proceed to deploy the Agent with the appropriate configuration. Review the `kerberos-agent-deployment.yaml` file and adjust the relevant settings, such as the RTSP URL, to ensure proper functionality. As mentioned below note that you can opt for the [Factory](https://github.com/kerberos-io/factory/tree/master/kubernetes) which gives you a UI to manage the creation of Agents. **_(Please note if you generated new the keys in the previous Kerberos Vault account creation, you need to update those in the Agent deployment)_**
+After deploying the Vault and configuring the necessary services for storage, database, and integration, you can proceed to deploy the Agent with the appropriate configuration. Review the `kerberos-agent-deployment.yaml` file and adjust the relevant settings, such as the RTSP URL, to ensure proper functionality. As mentioned below note that you can opt for the [Factory](https://github.com/kerberos-io/factory/tree/master/kubernetes) which gives you a UI to manage the creation of Agents. **_(Please note if you generated new the keys in the previous Vault account creation, you need to update those in the Agent deployment)_**
 
 ```bash
 kubectl apply -f kerberos-agent-deployment.yaml
 ```
 
-Review the creation of the Agent and review the logs of the container to validate the Agent is able to connect to the IP camera, and if a recording is being created and transferred to the Kerberos Vault
+Review the creation of the Agent and review the logs of the container to validate the Agent is able to connect to the IP camera, and if a recording is being created and transferred to the Vault
 
 ```bash
 kubectl get po -w -A
 kubectl logs -f kerberos-agent...
 ```
 
-To validate the Kerberos Vault and review any stored recordings, access the user interface at `http://localhost:30080` (after establishing the reverse tunnel).
+To validate the Vault and review any stored recordings, access the user interface at `http://localhost:30080` (after establishing the reverse tunnel).
 
 ### Create Agents through Factory
 
 Managing Agents through seperate configuration files might feel cumbersome, especially for non-technical users. This is where Factory comes into the picture. Factory provides a visual view that allows you to rapidly connect cameras through a user interface, which allows users without any technical background about cameras and kubernetes create Agents.
 
-Factory also requires a mongodb, just like Kerberos Vault. Luckily you can reuse the mongodb installation we have deployed earlier, the only thing we'll need to do is to create another `configmap.yaml` in the `kerberos-factory` namespace.
+Factory also requires a mongodb, just like Vault. Luckily you can reuse the mongodb installation we have deployed earlier, the only thing we'll need to do is to create another `configmap.yaml` in the `kerberos-factory` namespace.
 
 Create the `kerberos-factory` namespace.
 
@@ -419,9 +419,9 @@ kubectl get po -w -A
 
 ### Optimized Data Filtering for Enhanced Bandwidth Efficiency and Relevance
 
-Once your Agents are properly connected and all recordings are stored in the Kerberos Vault, you may encounter additional challenges such as bandwidth limitations, storage constraints, and the need to efficiently locate relevant data. To accomplish this, we can configure an integration to filter the recordings, ensuring that only the relevant ones are retained.
+Once your Agents are properly connected and all recordings are stored in the Vault, you may encounter additional challenges such as bandwidth limitations, storage constraints, and the need to efficiently locate relevant data. To accomplish this, we can configure an integration to filter the recordings, ensuring that only the relevant ones are retained.
 
-Assuming all configurations are correctly set and all Kubernetes deployments are operational, you can apply the `data-filtering-deployment.yaml` deployment. This deployment will schedule a pod that listens to the configured integration in Kerberos Vault and runs a YOLOv8 model to evaluate the recordings and match them against specified conditions.
+Assuming all configurations are correctly set and all Kubernetes deployments are operational, you can apply the `data-filtering-deployment.yaml` deployment. This deployment will schedule a pod that listens to the configured integration in Vault and runs a YOLOv8 model to evaluate the recordings and match them against specified conditions.
 
 Please note that if you do not have a GPU on the device, you will need to disable the resource limit of the nvidia/gpu. Once done the filtering will run on the CPU.
 
@@ -437,7 +437,7 @@ Let's deploy the data filtering pod (with or without GPU support).
 kubectl apply -f data-filtering-deployment.yaml
 ```
 
-Each time a recording is stored in the Kerberos Vault, the `data-filtering` pod will receive a notification and execute the specified model (YOLOv8 by default). Based on the defined conditions, the `data-filtering` pod may forward the recording to a remote Kerberos Vault, trigger alerts, or send notifications.
+Each time a recording is stored in the Vault, the `data-filtering` pod will receive a notification and execute the specified model (YOLOv8 by default). Based on the defined conditions, the `data-filtering` pod may forward the recording to a remote Vault, trigger alerts, or send notifications.
 
 Ensure that the `data-filtering` workload is actively running, receiving messages from the integration, and performing the necessary processing tasks.
 
@@ -446,7 +446,7 @@ kubectl get po -w -A
 kubectl logs -f data...
 ```
 
-You might see something like below, whereas the `data-filtering` pod is iterating over recordings and frames, looking for a person. Once it finds the person it will try to `forward` the recording to a remote Kerberos Vault.
+You might see something like below, whereas the `data-filtering` pod is iterating over recordings and frames, looking for a person. Once it finds the person it will try to `forward` the recording to a remote Vault.
 
 ```bash
 Persons: 0, Cars: 0, Trucks: 0
@@ -468,34 +468,34 @@ Delete media from http://vault-lb.kerberos-vault/api
 8) Releasing video writer and closing video capture
 ```
 
-As indicated by the logs `Something went wrong while forwarding media`, the forwarding process failed due to the absence of an integration between the two `Kerberos Vaults`. Currently, only one `Kerberos Vault` is available. To enable this feature, you will need to [install a second `Kerberos Vault` in the cloud](./README.k8s-managed.md) with access to cloud storage.
+As indicated by the logs `Something went wrong while forwarding media`, the forwarding process failed due to the absence of an integration between the two `Vaults`. Currently, only one `Vault` is available. To enable this feature, you will need to [install a second `Vault` in the cloud](./README.k8s-managed.md) with access to cloud storage.
 
 ### Add forwarding integration
 
-If you have setup a secondary Kerberos Vault in the cloud, attached cloud Object storage to it, we can continue and add an additional integration through the UI.
+If you have setup a secondary Vault in the cloud, attached cloud Object storage to it, we can continue and add an additional integration through the UI.
 
 ```bash
 ssh -L 8080:localhost:30080 user@server-ip -p 22
 ```
 
-Navigate to the `Kerberos Vault` application in your browser, access the `Integration` section, and add a new integration. This integration will connect your local Kerberos Vault to the remote Kerberos Vault, and will tell the system to set recordings in a `forwarding state`.
+Navigate to the `Vault` application in your browser, access the `Integration` section, and add a new integration. This integration will connect your local Vault to the remote Vault, and will tell the system to set recordings in a `forwarding state`.
 
 - Add an integration
 
-  - Kerberos Vault
+  - Vault
     - Enabled: true
     - Integration name: remote-vault
     - Forwarding mode: continuous
     - Url: http(s)://yourvault.com/api
     - Provider: The name of the remote storage provider
-    - Access Key: The access key of the account you have created on the remote Kerberos Vault
-    - Secret Access Key: The secret access key of the account you have created on the remote Kerberos Vault
+    - Access Key: The access key of the account you have created on the remote Vault
+    - Secret Access Key: The secret access key of the account you have created on the remote Vault
 
 If the integration is functioning correctly, you should observe that recordings are initially marked in gray as "To be forwarded." After a short period, some recordings will be updated to green, indicating they have been "Forwarded by."
 
 ## Cleanup
 
-If you consider to remove the Kerberos.io stack you might just disable the microk8s installation
+If you consider to remove the ecosystem you might just disable the microk8s installation
 
 ```bash
 microk8s reset

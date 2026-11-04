@@ -86,8 +86,7 @@ jobs:
           kubectl apply -f ./base/vault/mongodb-configmap.yaml -n kerberos-vault
           kubectl apply -f ./base/vault/kerberos-vault-deployment.yaml -n kerberos-vault
           kubectl apply -f ./base/vault/kerberos-vault-service.yaml -n kerberos-vault
-          sleep 10
-          kubectl wait --for=condition=available deployment/vault -n kerberos-vault --timeout=300s
+          kubectl rollout status deployment/vault -n kerberos-vault --timeout=300s
           kubectl get pods -A -o wide 
           kubectl get pods -A -o wide | grep vault | awk '{print $3}' | grep -q '1/1' && echo "vault pod is running with status 1/1" || (echo "vault pod is not running with status 1/1" && exit 1)
       - name: Install Agent

@@ -1,0 +1,39 @@
+{
+  "groups": [
+    { "id": "edge", "label": "Private edge network - Docker / Kubernetes", "x": 0, "y": 20, "w": 1240, "h": 680 }
+  ],
+  "nodes": [
+    { "id": "camera-1", "kind": "camera", "x": 30, "y": 280, "w": 180, "h": 140,
+      "header": "CAMERA", "title": "Camera 1", "subtitle": "RTSP stream" },
+    { "id": "camera-2", "kind": "camera", "x": 30, "y": 510, "w": 180, "h": 140,
+      "header": "CAMERA", "title": "Camera 2", "subtitle": "RTSP stream" },
+    { "id": "factory", "kind": "factory", "x": 280, "y": 80, "w": 220, "h": 140,
+      "header": "OPTIONAL ORCHESTRATION", "title": "Factory", "subtitle": "Manage on Kubernetes" },
+    { "id": "agent-1", "kind": "agent", "x": 280, "y": 280, "w": 220, "h": 140,
+      "header": "RECORD", "title": "Agent 1", "subtitle": "One camera per container" },
+    { "id": "agent-2", "kind": "agent", "x": 280, "y": 510, "w": 220, "h": 140,
+      "header": "RECORD", "title": "Agent 2", "subtitle": "One camera per container" },
+    { "id": "vault", "kind": "vault", "x": 620, "y": 280, "w": 230, "h": 140,
+      "header": "STORE", "title": "Vault", "subtitle": "Centralise edge recordings" },
+    { "id": "mongodb", "kind": "database", "x": 970, "y": 80, "w": 240, "h": 140,
+      "header": "METADATA", "title": "MongoDB", "subtitle": "Vault metadata" },
+    { "id": "storage", "kind": "storage", "x": 970, "y": 280, "w": 240, "h": 140,
+      "header": "RECORDINGS", "title": "Object storage", "subtitle": "MinIO / S3-compatible" },
+    { "id": "broker", "kind": "amqp", "x": 970, "y": 510, "w": 240, "h": 140,
+      "header": "OPTIONAL EVENTS", "title": "RabbitMQ", "subtitle": "Recording events" },
+    { "id": "integration", "kind": "default", "x": 620, "y": 510, "w": 230, "h": 140,
+      "header": "OPTIONAL INTEGRATION", "title": "Custom application", "subtitle": "Filter, notify or integrate" }
+  ],
+  "connections": [
+    { "from": "camera-1", "to": "agent-1", "fromSide": "right", "toSide": "left", "label": "RTSP" },
+    { "from": "camera-2", "to": "agent-2", "fromSide": "right", "toSide": "left", "label": "RTSP" },
+    { "from": "factory", "to": "agent-1", "fromSide": "bottom", "toSide": "top", "kind": "dashed" },
+    { "from": "factory", "to": "agent-2", "fromSide": "left", "toSide": "left", "kind": "dashed" },
+    { "from": "agent-2", "to": "vault", "fromSide": "right", "toSide": "left" },
+    { "from": "agent-1", "to": "vault", "fromSide": "right", "toSide": "left", "label": "Upload" },
+    { "from": "vault", "to": "mongodb", "fromSide": "top", "toSide": "left" },
+    { "from": "vault", "to": "storage", "fromSide": "right", "toSide": "left" },
+    { "from": "vault", "to": "broker", "fromSide": "right", "toSide": "left", "label": "Events" },
+    { "from": "broker", "to": "integration", "fromSide": "left", "toSide": "right", "label": "Consume" }
+  ]
+}
