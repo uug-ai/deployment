@@ -27,7 +27,7 @@ jobs:
           kubectl get pods -A -o wide
           kubectl get sc
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Check promoted Hub runtime
         run: |
           helm repo add kerberos https://charts.kerberos.io
@@ -51,16 +51,11 @@ jobs:
           kubectl wait --for=condition=available deployment/prometheus-operator -n default --timeout=300s
           kubectl get crd
           kubectl get po -A -o wide
-      - name: Install Minio
-        id: install-minio
+      - name: Install Garage S3
+        id: install-garage
         run: |
-          git clone --depth 1 --branch v6.0.1 https://github.com/minio/operator.git && kubectl apply -k operator/
-          kubectl apply -f ./base/minio/minio-tenant-base.yaml
-          echo "Waiting for resources to be created..."
-          sleep 10
-          kubectl wait --for=jsonpath='{.status.readyReplicas}'=1 statefulset/myminio-pool-0 -n minio-tenant --timeout=300s
-          kubectl get po -A -o wide
-          kubectl get po -A -o wide | grep myminio-pool-0-0 | awk '{print $3}' | grep -q '2/2' && echo "myminio-pool-0-0 pod is running with status 2/2" || (echo "myminio-pool-0-0 pod is not running with status 2/2" && exit 1)
+          bash scripts/install-garage.sh
+          bash scripts/check-garage.sh
       - name: Install MongoDB
         id: install-mongodb
         run: |
@@ -131,21 +126,16 @@ jobs:
           kubectl get pods -A -o wide
       - name: Collect deployment diagnostics
         if: failure()
-        run: |
-          kubectl get pods,pvc -A -o wide
-          kubectl get events -A --sort-by=.lastTimestamp
-          kubectl -n minio-tenant describe pods
-          kubectl -n minio-operator logs -l name=minio-operator --all-containers=true --tail=100
-          kubectl -n minio-tenant logs myminio-pool-0-0 --all-containers=true --tail=100
+        run: bash scripts/diagnose-deployment.sh
       - name: Send Slack Notification on Success
         if: success()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"✅ Kind deployment successful on ${{ matrix.os }} (${{ matrix.kind }}) - triggered by ${{ github.actor }}\"}" $SLACK_WEBHOOK_URL
+          bash scripts/notify-slack.sh "✅ Kind deployment successful on ${{ matrix.os }} (${{ matrix.kind }}) - triggered by ${{ github.actor }}"
       - name: Send Slack Notification on Failure
         if: failure()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"❌ Kind deployment failed on ${{ matrix.os }} (${{ matrix.kind }}) - <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>\"}" $SLACK_WEBHOOK_URL
+          bash scripts/notify-slack.sh "❌ Kind deployment failed on ${{ matrix.os }} (${{ matrix.kind }}) - <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"

@@ -92,22 +92,22 @@ openai:
 kerberosvault:
   #uri: "http://vault-lb.kerberos-vault" # this needs to be a public accessible DNS name.
   uri: http://vault-nodeport.kerberos-vault:80/api
-  provider: "minio"
+  provider: "garage"
   accesskey: "XJoi2@bgSOvOYBy#"
   secretkey: "OGGqat4lXRpL@9XBYc8FUaId@5"
   # Archiving is used when creating a task. The underlying recording of the task will be copied from its
   # existing provider to the below archived provider. Seperate credentials are used, as it makes possible to
   # specify another retention period.
   archive:
-    provider: "minio"
+    provider: "garage"
     accesskey: "XJoi2@bgSOvOYBy#"
     secretkey: "OGGqat4lXRpL@9XBYc8FUaId@5"
   thumbnail:
-    provider: "minio"
+    provider: "garage"
     accessKey: "XJoi2@bgSOvOYBy#"
     secretKey: "OGGqat4lXRpL@9XBYc8FUaId@5"
   sprite:
-    provider: "minio"
+    provider: "garage"
     accessKey: "XJoi2@bgSOvOYBy#"
     secretKey: "OGGqat4lXRpL@9XBYc8FUaId@5"
 email:
