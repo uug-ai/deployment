@@ -18,9 +18,21 @@ spec:
       labels:
         app: factory
     spec:
+      securityContext:
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: factory
-        image: ghcr.io/uug-ai/factory:v2.0.4
+        image: ghcr.io/uug-ai/factory:v2.0.13@sha256:ade073660d911ca66d75b2abc298f1ddcbfbfe43aeed44e60fc1984b49b73d95
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 65532
+          runAsGroup: 65532
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
         resources:
           requests:
             memory: 128Mi
@@ -29,8 +41,36 @@ spec:
             memory: 128Mi
             cpu: 100m
         ports:
-          - containerPort: 80
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+        startupProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          failureThreshold: 30
+          periodSeconds: 2
+          timeoutSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          periodSeconds: 5
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: http
+          periodSeconds: 10
+          timeoutSeconds: 2
+        volumeMounts:
+          - name: factory-config
+            mountPath: /home/factory/config
+          - name: factory-tmp
+            mountPath: /tmp
         env:
+        - name: PORT
+          value: "8080"
         - name: GIN_MODE
           value: release
         - name: KERBEROS_LOGIN_USERNAME
@@ -55,5 +95,9 @@ spec:
         - name: FACTORY_ENVIRONMENT
           value: "kubernetes"
         - name: K8S_PROXY
-          value: http://localhost:80
-
+          value: http://localhost:8080
+      volumes:
+        - name: factory-config
+          emptyDir: {}
+        - name: factory-tmp
+          emptyDir: {}

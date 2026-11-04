@@ -3,7 +3,7 @@ set -uo pipefail
 
 kubectl get pods,pvc -A -o wide
 kubectl get events -A --sort-by=.lastTimestamp
-for namespace in garage mongodb rabbitmq vernemq kerberos-vault kerberos-agent kerberos-hub; do
+for namespace in garage mongodb rabbitmq vernemq kerberos-vault kerberos-agent kerberos-hub kerberos-factory; do
   if ! pods="$(kubectl -n "$namespace" get pods -o name)"; then
     echo "::warning::Could not list pods in $namespace."
     continue
