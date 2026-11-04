@@ -155,6 +155,8 @@ kerberoshub:
         memory: 100Mi
         cpu: 100m
   api:
+    # Chart 0.170.1 supplies non-root security contexts and writable /tmp.
+    # Retain hub-api-tmp when overriding the chart's volume/mount lists.
     repository: ghcr.io/uug-ai/hub-api
     pullPolicy: IfNotPresent
     tag: "v1.11.31"

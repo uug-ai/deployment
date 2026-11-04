@@ -3,6 +3,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CHART="${1:-kerberos/hub}"
+version=()
+if [[ "$CHART" == kerberos/hub ]]; then version=(--version 0.170.1); fi
 
 assert_contains() {
   if ! grep -Eq -- "$2" <<< "$1"; then
@@ -19,7 +21,7 @@ nodeport="$(awk '
 assert_contains "$nodeport" 'targetPort: http$'
 assert_contains "$nodeport" 'nodePort: 32080'
 
-rendered="$(helm template hub "$CHART" --values "$ROOT/base/hub/kerberos-hub-values.yaml" \
+rendered="$(helm template hub "$CHART" "${version[@]}" --values "$ROOT/base/hub/kerberos-hub-values.yaml" \
   --set mode=ui --set kerberoshub.frontend.demoEnabled=true)"
 if grep -q 'image: "docker.io/ghcr.io/' <<< "$rendered"; then
   echo "Fully qualified GHCR image was prefixed with docker.io" >&2
@@ -41,4 +43,20 @@ for name in hub-frontend hub-frontend-demo; do
   assert_contains "$deployment" 'image: "ghcr.io/uug-ai/hub-frontend:v1.19.28"$'
   echo "OK: $name uses the promoted image and matching hardened runtime"
 done
+api="$(awk '
+  function emit() { if (deployment && matched) printf "%s", block }
+  /^---$/ { emit(); block=""; deployment=0; matched=0 }
+  { block=block $0 "\n" }
+  /^kind: Deployment$/ { deployment=1 }
+  /^  name: hub-api$/ { matched=1 }
+  END { emit() }
+' <<< "$rendered")"
+for setting in 'runAsNonRoot: true' 'runAsUser: 65532' 'runAsGroup: 65532' \
+  'fsGroup: 65532' 'readOnlyRootFilesystem: true' 'allowPrivilegeEscalation: false' \
+  'type: RuntimeDefault' 'drop:' '- ALL' 'name: hub-api-tmp' \
+  'emptyDir: \{\}' 'mountPath: /tmp'; do
+  assert_contains "$api" "^[[:space:]]*(- )?$setting$"
+done
+assert_contains "$api" 'image: "ghcr.io/uug-ai/hub-api:v1.11.31"$'
+echo "OK: hub-api uses the promoted image, hardened security and writable scratch"
 echo "Deployment Hub runtime preflight passed."

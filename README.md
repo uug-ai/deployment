@@ -32,7 +32,16 @@ example on fork PRs), CI emits a warning and skips delivery without masking
 deployment failures. Configured webhook delivery errors still fail the step.
 Failed deployment jobs collect pod events and bounded logs for diagnosis.
 
-### Hardened Hub frontend
+### Hardened Hub API and frontend
+
+The Kubernetes overlays and full deployment workflows pin Hub chart **0.170.1**.
+It supplies Hub API container/pod security contexts for the promoted
+`ghcr.io/uug-ai/hub-api:v1.11.31`: UID/GID `65532`, read-only root filesystem,
+no privilege escalation, dropped capabilities and RuntimeDefault seccomp.
+A disk-backed `hub-api-tmp` emptyDir at `/tmp` provides writable upload scratch
+space with pod `fsGroup: 65532`; it is not persistent storage.
+Retain this volume and mount when adding custom API mounts, because Helm
+replaces lists rather than appending to them.
 
 The promoted frontend image requires Hub chart **0.170.0 or newer**, which
 provides port `8080`, non-root/read-only runtime settings and a writable `/tmp`
@@ -41,7 +50,7 @@ legacy image and port `80`. Keep `global.imageRegistry` empty for the supplied
 fully qualified `ghcr.io` image names. Service ports remain `80` and the frontend
 NodePort remains `32080`, targeting the container port named `http`.
 
-Run `bash scripts/check-hub-runtime.sh` to check the published chart with these
+Run `bash scripts/check-hub-runtime.sh` to check published chart `0.170.1` with these
 values before installation, or pass a local chart path as the first argument.
 When adding custom branding mounts, preserve the chart's `frontend-tmp` volume
 and `/tmp` mount. Existing deployments may require the explicit
