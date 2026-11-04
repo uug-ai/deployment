@@ -27,6 +27,9 @@ credentials are committed to the repository. Garage's `--single-node` and
 The installer refuses to generate new credentials if the PVC already exists
 but its Secret is missing: restore the original Secret instead.
 
+The installer requires `kubectl`, `jq` and `openssl`. The smoke test also
+requires AWS CLI and `curl` (provided by the GitHub-hosted CI runners).
+
 For a full Kustomize installation, prepare credentials before applying the
 overlay; the default base already includes Garage:
 
@@ -80,7 +83,7 @@ not with the generated S3 key.
 
 ## Verification
 
-`scripts/check-garage.sh` performs an authenticated AWS Signature V4 PUT/GET
+`scripts/check-garage.sh` uses AWS CLI for an authenticated Signature V4 PUT/GET
 through the Kubernetes Service and compares object bytes. It retains a small,
 uniquely named object under `mybucket/ci-smoke/`; it never deletes existing
 objects. The optional `--restart` flag restarts the Garage pod between upload

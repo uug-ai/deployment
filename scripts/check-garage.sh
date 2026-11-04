@@ -5,11 +5,15 @@ if [[ $# -gt 1 || ( $# -eq 1 && "$1" != --restart ) ]]; then
   echo "Usage: bash scripts/check-garage.sh [--restart]" >&2
   exit 1
 fi
+if ! command -v aws > /dev/null; then
+  echo "AWS CLI is required for the Garage S3 smoke test." >&2
+  exit 1
+fi
 temporary="$(mktemp -d)"
 pid=""
 cleanup() {
   if [[ -n "$pid" ]]; then kill "$pid"; fi
-  rm -f "$temporary/upload" "$temporary/download" "$temporary/port-forward.log"
+  rm -f "$temporary/upload" "$temporary/download" "$temporary/port-forward.log" "$temporary/aws-config"
   rmdir "$temporary"
 }
 trap cleanup EXIT
@@ -34,13 +38,18 @@ forward() {
 }
 forward
 
+export AWS_ACCESS_KEY_ID="$access_key" AWS_SECRET_ACCESS_KEY="$secret_key"
+export AWS_DEFAULT_REGION=garage AWS_EC2_METADATA_DISABLED=true
+export AWS_PAGER=""
+unset AWS_SESSION_TOKEN AWS_PROFILE AWS_DEFAULT_PROFILE
+export AWS_REQUEST_CHECKSUM_CALCULATION=when_required AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
+export AWS_CONFIG_FILE="$temporary/aws-config"
+printf '[default]\ns3 =\n    addressing_style = path\n' > "$AWS_CONFIG_FILE"
 object="ci-smoke/$(openssl rand -hex 16)"
 openssl rand -hex 128 > "$temporary/upload"
-endpoint="http://127.0.0.1:13900/mybucket/$object"
-payload_hash="$(sha256sum "$temporary/upload" | cut -d ' ' -f 1)"
-curl --fail-with-body --silent --show-error --aws-sigv4 "aws:amz:garage:s3" \
-  -H "x-amz-content-sha256: $payload_hash" \
-  --user "$access_key:$secret_key" --upload-file "$temporary/upload" "$endpoint"
+endpoint="http://127.0.0.1:13900"
+aws --endpoint-url "$endpoint" s3api put-object \
+  --bucket mybucket --key "$object" --body "$temporary/upload"
 if [[ $# -eq 1 ]]; then
   kill "$pid"
   wait "$pid" || [[ "$?" == 143 ]]
@@ -49,8 +58,7 @@ if [[ $# -eq 1 ]]; then
   kubectl -n garage rollout status statefulset/garage --timeout=300s
   forward
 fi
-curl --fail-with-body --silent --show-error --aws-sigv4 "aws:amz:garage:s3" \
-  -H "x-amz-content-sha256: $(sha256sum /dev/null | cut -d ' ' -f 1)" \
-  --user "$access_key:$secret_key" "$endpoint" --output "$temporary/download"
+aws --endpoint-url "$endpoint" s3api get-object \
+  --bucket mybucket --key "$object" "$temporary/download"
 cmp "$temporary/upload" "$temporary/download"
 echo "Garage S3 authenticated PUT/GET passed through the Kubernetes Service (object mybucket/$object retained)."
