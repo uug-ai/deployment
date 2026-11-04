@@ -10,8 +10,8 @@ The ecosystem offers flexible installation options, supporting deployment in hyb
 
 - [Agent](https://learn.uug.ai/docs/agent/)
 - [Factory](https://learn.uug.ai/docs/factory/)
-- [Vault](https://github.com/kerberos-io/vault)
-- [Hub](https://github.com/kerberos-io/hub)
+- [Vault](https://learn.uug.ai/docs/vault/)
+- [Hub](https://learn.uug.ai/docs/hub/)
 
 ## Continuous deployment
 
@@ -38,29 +38,10 @@ example on fork PRs), CI emits a warning and skips delivery without masking
 deployment failures. Configured webhook delivery errors still fail the step.
 Failed deployment jobs collect pod events and bounded logs for diagnosis.
 
-### Hardened Hub API and frontend
+### Security
 
-The Kubernetes overlays and full deployment workflows pin Hub chart **0.170.1**.
-It supplies Hub API container/pod security contexts for the promoted
-`ghcr.io/uug-ai/hub-api:v1.11.31`: UID/GID `65532`, read-only root filesystem,
-no privilege escalation, dropped capabilities and RuntimeDefault seccomp.
-A disk-backed `hub-api-tmp` emptyDir at `/tmp` provides writable upload scratch
-space with pod `fsGroup: 65532`; it is not persistent storage.
-Retain this volume and mount when adding custom API mounts, because Helm
-replaces lists rather than appending to them.
-
-The promoted frontend image requires Hub chart **0.170.0 or newer**, which
-provides port `8080`, non-root/read-only runtime settings and a writable `/tmp`
-mount. Both primary and demo frontends use these settings; Admin remains on its
-legacy image and port `80`. Keep `global.imageRegistry` empty for the supplied
-fully qualified `ghcr.io` image names. Service ports remain `80` and the frontend
-NodePort remains `32080`, targeting the container port named `http`.
-
-Run `bash scripts/check-hub-runtime.sh` to check published chart `0.170.1` with these
-values before installation, or pass a local chart path as the first argument.
-When adding custom branding mounts, preserve the chart's `frontend-tmp` volume
-and `/tmp` mount. Existing deployments may require the explicit
-[HTTP port migration](https://github.com/kerberos-io/helm-charts/blob/main/charts/hub/README.md#recovering-a-duplicate-http-port-during-upgrades).
+We harden our container images and check our solutions for known CVEs. See the
+[Secure repository](https://github.com/uug-ai/secure) for our security work.
 
 ## Architecture
 
