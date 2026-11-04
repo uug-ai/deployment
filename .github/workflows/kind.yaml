@@ -103,7 +103,7 @@ jobs:
         run: |
           helm repo add kerberos https://charts.kerberos.io
           kubectl create namespace kerberos-hub
-          helm install hub kerberos/hub --values ./base/hub/kerberos-hub-values.yaml -n kerberos-hub --create-namespace
+          helm install hub kerberos/hub --version 0.170.1 --values ./base/hub/kerberos-hub-values.yaml -n kerberos-hub --create-namespace
           sleep 10
           kubectl wait --for=condition=available deployment --all -n kerberos-hub --timeout=300s
           kubectl get pods -A -o wide
