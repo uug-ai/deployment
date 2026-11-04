@@ -1,4 +1,4 @@
-name: Validate Kustomize and Garage on kind
+name: Validate Kustomize, Garage and Factory on kind
 
 on:
   workflow_dispatch:
@@ -45,6 +45,28 @@ jobs:
           bash scripts/install-garage.sh
           test "$credential_hash" = "$(kubectl -n garage get secret garage-credentials -o jsonpath='{.data}' | sha256sum)"
           bash scripts/check-garage.sh --restart
+      - name: Install legacy Factory and upgrade the actual base
+        run: |
+          kubectl apply -f base/namespaces/kerberos-factory.yaml
+          kubectl apply -f base/factory/kerberos-factory-clusterrole.yaml
+          kubectl create --dry-run=client -n kerberos-factory -f base/factory/kerberos-factory-deployment.yaml -o json |
+            jq '
+              del(.spec.template.spec.securityContext, .spec.template.spec.volumes) |
+              .spec.template.spec.containers[0] |= (
+                .image = "ghcr.io/uug-ai/factory:v2.0.11" |
+                .ports = [{"containerPort":80,"protocol":"TCP"}] |
+                del(.securityContext, .volumeMounts, .startupProbe, .readinessProbe, .livenessProbe) |
+                .env |= map(
+                  if .name == "K8S_PROXY" then .value = "http://localhost:80"
+                  elif .name == "PORT" then .value = "80"
+                  else . end))' |
+            kubectl apply -n kerberos-factory -f -
+          kubectl create --dry-run=client -n kerberos-factory -f base/factory/kerberos-factory-service.yaml -o json |
+            jq '.spec.ports[0].targetPort = 80' |
+            kubectl apply -n kerberos-factory -f -
+          kubectl -n kerberos-factory rollout status deployment/factory --timeout=300s
+          kubectl apply -k base/factory
+          bash scripts/check-factory.sh
       - name: Collect deployment diagnostics
         if: failure()
         run: bash scripts/diagnose-deployment.sh
