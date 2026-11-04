@@ -35,5 +35,5 @@ if [[ $# -eq 1 ]]; then
 fi
 kubectl apply -k "$ROOT/base/garage"
 kubectl -n garage rollout status statefulset/garage --timeout=300s
-kubectl -n garage exec garage-0 -- /garage bucket info mybucket
+kubectl -n garage exec garage-0 -- /garage bucket info mybucket > /dev/null
 echo "Garage is available at garage.garage:3900 (region garage, bucket mybucket). Credentials are in Secret garage/garage-credentials."

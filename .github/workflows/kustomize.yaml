@@ -10,6 +10,7 @@ jobs:
   deploy:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
         #kind: [v0.21.0, v0.22.0, v0.23.0, v0.24.0, v0.25.0]

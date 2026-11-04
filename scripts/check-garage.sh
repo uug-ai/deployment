@@ -37,7 +37,9 @@ forward
 object="ci-smoke/$(openssl rand -hex 16)"
 openssl rand -hex 128 > "$temporary/upload"
 endpoint="http://127.0.0.1:13900/mybucket/$object"
+payload_hash="$(sha256sum "$temporary/upload" | cut -d ' ' -f 1)"
 curl --fail-with-body --silent --show-error --aws-sigv4 "aws:amz:garage:s3" \
+  -H "x-amz-content-sha256: $payload_hash" \
   --user "$access_key:$secret_key" --upload-file "$temporary/upload" "$endpoint"
 if [[ $# -eq 1 ]]; then
   kill "$pid"
@@ -48,6 +50,7 @@ if [[ $# -eq 1 ]]; then
   forward
 fi
 curl --fail-with-body --silent --show-error --aws-sigv4 "aws:amz:garage:s3" \
+  -H "x-amz-content-sha256: $(sha256sum /dev/null | cut -d ' ' -f 1)" \
   --user "$access_key:$secret_key" "$endpoint" --output "$temporary/download"
 cmp "$temporary/upload" "$temporary/download"
 echo "Garage S3 authenticated PUT/GET passed through the Kubernetes Service (object mybucket/$object retained)."
