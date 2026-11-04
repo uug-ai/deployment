@@ -15,9 +15,15 @@ The ecosystem offers flexible installation options, supporting deployment in hyb
 
 ## Continuous deployment
 
-[<img src="https://github.com/kerberos-io/deployment/workflows/Deploy%20on%20Microk8s/badge.svg"/>](https://github.com/kerberos-io/deployment/actions/workflows/microk8s.yaml) [<img src="https://github.com/kerberos-io/deployment/workflows/Deploy%20on%20Kubernetes/badge.svg"/>](https://github.com/kerberos-io/deployment/actions/workflows/kind.yaml)
+[![Deploy on kind](https://github.com/uug-ai/deployment/actions/workflows/kind.yaml/badge.svg?branch=main)](https://github.com/uug-ai/deployment/actions/workflows/kind.yaml)
+[![Deploy on k3d](https://github.com/uug-ai/deployment/actions/workflows/k3d.yaml/badge.svg?branch=main)](https://github.com/uug-ai/deployment/actions/workflows/k3d.yaml)
+[![Deploy on MicroK8s](https://github.com/uug-ai/deployment/actions/workflows/microk8s.yaml/badge.svg?branch=main)](https://github.com/uug-ai/deployment/actions/workflows/microk8s.yaml)
+[![Validate Kustomize, Garage and Factory on kind](https://github.com/uug-ai/deployment/actions/workflows/kustomize.yaml/badge.svg?branch=main)](https://github.com/uug-ai/deployment/actions/workflows/kustomize.yaml)
 
-This repository continuously tests the ecosystem deployment using GitHub Actions across various platforms. Refer to the badges for an overview of the operating systems and Kubernetes distributions we are deploying to. We welcome suggestions for additional automations to consider.
+These badges show the latest status of each GitHub Actions workflow on `main`.
+Select a badge to view its runs and platform-specific results. The deployment
+workflows continuously test the ecosystem across kind, k3d, and MicroK8s; the
+Kustomize workflow validates the Kustomize, Garage, and Factory setup.
 
 Kubernetes examples and CI now use **Garage S3** for local object storage.
 See the [Garage setup guide](./base/garage/README.md) for generated credentials,
