@@ -10,8 +10,8 @@ The ecosystem offers flexible installation options, supporting deployment in hyb
 
 - [Agent](https://learn.uug.ai/docs/agent/)
 - [Factory](https://learn.uug.ai/docs/factory/)
-- [Vault](https://github.com/kerberos-io/vault)
-- [Hub](https://github.com/kerberos-io/hub)
+- [Vault](https://learn.uug.ai/docs/vault/)
+- [Hub](https://learn.uug.ai/docs/hub/)
 
 ## Continuous deployment
 
