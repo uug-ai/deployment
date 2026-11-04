@@ -38,16 +38,10 @@ example on fork PRs), CI emits a warning and skips delivery without masking
 deployment failures. Configured webhook delivery errors still fail the step.
 Failed deployment jobs collect pod events and bounded logs for diagnosis.
 
-### Hardened Hub API and frontend
+### Security
 
-The Kubernetes deployment uses Hub chart **0.170.1**, which provides hardened
-runtime defaults and writable temporary storage for the API and frontend.
-When customizing mounts, retain the chart's temporary volumes; Helm replaces
-volume and mount lists rather than appending to them.
-
-Run `bash scripts/check-hub-runtime.sh` to validate the chart settings before
-deployment. Existing installations may also need the
-[HTTP port migration](https://github.com/kerberos-io/helm-charts/blob/main/charts/hub/README.md#recovering-a-duplicate-http-port-during-upgrades).
+We harden our container images and check our solutions for known CVEs. See the
+[Secure repository](https://github.com/uug-ai/secure) for our security work.
 
 ## Architecture
 
