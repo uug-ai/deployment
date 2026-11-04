@@ -372,7 +372,8 @@ before switching an existing installation.
 
 Check [Agent HTTP port compatibility](./README.md#agent-http-port-compatibility)
 before selecting an image: published releases use internal port `80`, while
-the forthcoming hardened image requires `8080` and matching Service targets.
+the forthcoming hardened image defaults to `8080`. Service targets must match
+the listener selected with `AGENT_PORT`.
 
 After deploying the Vault and configuring the necessary services for storage, database, and integration, you can proceed to deploy the Agent with the appropriate configuration. Review the `kerberos-agent-deployment.yaml` file and adjust the relevant settings, such as the RTSP URL, to ensure proper functionality. As mentioned below note that you can opt for the [Factory](https://github.com/kerberos-io/factory/tree/master/kubernetes) which gives you a UI to manage the creation of Agents. **_(Please note if you generated new the keys in the previous Vault account creation, you need to update those in the Agent deployment)_**
 
