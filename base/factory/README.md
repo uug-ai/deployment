@@ -53,6 +53,17 @@ Other relevant environment variables:
 | `PORT` | `8080` | Unprivileged HTTP listener used by the hardened image. |
 | `K8S_PROXY` | `http://localhost:8080` | Internal proxy address Factory calls for the `/kubernetes` API. |
 
+### Agent image compatibility
+
+Factory's own port `8080` does not determine the HTTP port of the Agents it
+creates. Published Agent releases still use port `80`; the forthcoming hardened
+Agent image moves to `8080`. Before changing `KERBEROS_AGENT_IMAGE`, pin a
+verified image tag or digest and confirm that the Factory version in use
+generates compatible Agent container ports, Service target ports and any HTTP
+probes. Existing Agent resources may need a coordinated update as well.
+Do not assume changing this environment variable or pulling `latest` migrates
+those resources. See the [Agent port migration guidance](../../README.md#agent-http-port-compatibility).
+
 ## Hardened runtime and upgrades
 
 The image runs as UID/GID `65532:65532`, with a read-only root filesystem,

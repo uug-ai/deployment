@@ -14,6 +14,10 @@ In this tutorial, we will guide you through the installation of the complete sta
 
 ## Install Microk8s
 
+Before deploying, check [Agent HTTP port compatibility](./README.md#agent-http-port-compatibility).
+The Agent base keeps port `80` for currently published images; migrating to the
+forthcoming hardened image requires coordinated image and port updates.
+
 To install MicroK8s on your system, follow these steps. First, ensure that you have `snapd` installed on your machine. If not, you can install it using the following command:
 
 To install MicroK8s on your system, follow these steps.

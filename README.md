@@ -43,6 +43,31 @@ Failed deployment jobs collect pod events and bounded logs for diagnosis.
 We harden our container images and check our solutions for known CVEs. See the
 [Secure repository](https://github.com/uug-ai/secure) for our security work.
 
+### Agent HTTP port compatibility
+
+The forthcoming Agent hardening update moves its internal HTTP listener from
+`80` to `8080`. Published Agent releases still use `80`; do not change a running
+deployment's target port until its selected image supports `8080`. Pin a verified
+image tag or digest rather than assuming `kerberos/agent:latest` has this change.
+See the [Docker port mappings](./README.docker.md#agent-http-port-migration).
+
+For Kubernetes, update the image and `containerPort` together in
+[`base/agent/kerberos-agent-deployment.yaml`](./base/agent/kerberos-agent-deployment.yaml).
+If enabling its commented Service example, change `targetPort` to `8080` as
+well; the external Service `port: 80` can stay unchanged. That example's
+`selector.app` must also match the Deployment's `app: agent1` label.
+There are no Agent HTTP health probes in this base manifest; any probes or
+direct pod port-forwards added locally must target the selected image's listener.
+The Vault URL ending in `:80/api` is a separate Service and must not be changed.
+
+Factory also selects `kerberos/agent:latest` through `KERBEROS_AGENT_IMAGE`.
+Before choosing a hardened Agent image, verify that Factory's generated Agent
+Deployments, Services and probes support port `8080`; changing the image setting
+alone does not establish compatibility. See the
+[Factory Agent-image guidance](./base/factory/README.md#agent-image-compatibility).
+These deployment defaults remain unchanged until a compatible image and
+controller are verified.
+
 ## Architecture
 
 As previously indicated, several integral components, including object storage, databases, and message brokers, are deployed and configured to support the ecosystem. The architecture diagrams below provide a visual representation of these components and how they interact in self-hosted and managed cloud deployments.
