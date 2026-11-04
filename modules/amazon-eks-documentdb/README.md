@@ -2,7 +2,7 @@
 
 Terraform stack that creates a **basic Kubernetes cluster (EKS) and a managed
 MongoDB-compatible database (Amazon DocumentDB) on AWS**, wired together so
-Kerberos Hub can be installed on it straight away.
+Hub can be installed on it straight away.
 
 It is primarily meant as a **reproducible test environment** for the DocumentDB
 support in the [`hub` helm chart](https://github.com/kerberos-io/helm-charts),
@@ -110,7 +110,7 @@ $(terraform output -raw update_kubeconfig_command)
 kubectl get nodes
 ```
 
-## Installing Kerberos Hub against DocumentDB
+## Installing Hub against DocumentDB
 
 ### 1. Create the certificate authority secret
 
@@ -370,6 +370,6 @@ for the full list; the ones you are most likely to change:
 
 ## Related
 
-- [`../amazon-documentdb`](../amazon-documentdb/README.md) — using DocumentDB as the Kerberos Hub metadata store
-- [`../../overlays/documentdb`](../../overlays/documentdb) — Kustomize overlay that deploys Kerberos Hub against DocumentDB
+- [`../amazon-documentdb`](../amazon-documentdb/README.md) — using DocumentDB as the Hub metadata store
+- [`../../overlays/documentdb`](../../overlays/documentdb) — Kustomize overlay that deploys Hub against DocumentDB
 - [`../../README.k8s-managed.md`](../../README.k8s-managed.md) — installing on managed Kubernetes

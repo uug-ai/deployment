@@ -1,0 +1,37 @@
+{
+  "groups": [
+    { "id": "edge", "label": "Private edge sites - outbound uploads", "x": 0, "y": 20, "w": 500, "h": 760 },
+    { "id": "cloud", "label": "Cloud - managed Kubernetes and backing services", "x": 620, "y": 20, "w": 700, "h": 760 }
+  ],
+  "nodes": [
+    { "id": "camera-1", "kind": "camera", "x": 30, "y": 170, "w": 180, "h": 140,
+      "header": "SITE A", "title": "Cameras", "subtitle": "Private network" },
+    { "id": "camera-2", "kind": "camera", "x": 30, "y": 530, "w": 180, "h": 140,
+      "header": "SITE B", "title": "Cameras", "subtitle": "Private network" },
+    { "id": "agent-1", "kind": "agent", "x": 270, "y": 170, "w": 200, "h": 140,
+      "header": "RECORD", "title": "Agents", "subtitle": "One per camera" },
+    { "id": "agent-2", "kind": "agent", "x": 270, "y": 530, "w": 200, "h": 140,
+      "header": "RECORD", "title": "Agents", "subtitle": "One per camera" },
+    { "id": "vault", "kind": "vault", "x": 650, "y": 170, "w": 230, "h": 140,
+      "header": "STORE", "title": "Vault", "subtitle": "Receive recordings" },
+    { "id": "storage", "kind": "storage", "x": 1040, "y": 170, "w": 250, "h": 140,
+      "header": "RECORDINGS", "title": "Object storage", "subtitle": "S3 / Azure Blob / GCS" },
+    { "id": "broker", "kind": "amqp", "x": 650, "y": 380, "w": 230, "h": 140,
+      "header": "EVENTS", "title": "RabbitMQ", "subtitle": "Queue recording events" },
+    { "id": "mongodb", "kind": "database", "x": 1040, "y": 380, "w": 250, "h": 140,
+      "header": "METADATA", "title": "MongoDB", "subtitle": "Vault / Hub databases" },
+    { "id": "hub", "kind": "hub", "x": 650, "y": 600, "w": 230, "h": 140,
+      "header": "ANALYSE", "title": "Hub", "subtitle": "Pipeline, API and UI" }
+  ],
+  "connections": [
+    { "from": "camera-1", "to": "agent-1", "fromSide": "right", "toSide": "left" },
+    { "from": "camera-2", "to": "agent-2", "fromSide": "right", "toSide": "left" },
+    { "from": "agent-2", "to": "vault", "fromSide": "right", "toSide": "left" },
+    { "from": "agent-1", "to": "vault", "fromSide": "right", "toSide": "left", "label": "HTTPS upload" },
+    { "from": "vault", "to": "mongodb", "fromSide": "right", "toSide": "left" },
+    { "from": "vault", "to": "storage", "fromSide": "right", "toSide": "left", "label": "Recordings" },
+    { "from": "vault", "to": "broker", "fromSide": "bottom", "toSide": "top", "label": "Events" },
+    { "from": "broker", "to": "hub", "fromSide": "bottom", "toSide": "top", "label": "Process" },
+    { "from": "hub", "to": "mongodb", "fromSide": "right", "toSide": "bottom" }
+  ]
+}

@@ -73,12 +73,12 @@ output "docdb_tls_enabled" {
 }
 
 ###############################################################################
-# Kerberos Hub wiring
+# Hub wiring
 ###############################################################################
 
 output "mongodb_uri" {
   description = <<-EOT
-    Connection string for the Kerberos Hub helm chart (`mongodb.uri`).
+    Connection string for the Hub helm chart (`mongodb.uri`).
     The chart appends `tls=true` and `tlsCAFile=...` itself when
     `mongodb.tls.enabled=true`, so no TLS parameters are included here.
     Read it with: terraform output -raw mongodb_uri
@@ -97,7 +97,7 @@ output "mongodb_uri" {
 
 output "hub_values_snippet" {
   description = <<-EOT
-    Ready to paste values for the Kerberos Hub helm chart. Write it to a file with:
+    Ready to paste values for the Hub helm chart. Write it to a file with:
       terraform output -raw hub_values_snippet > hub-documentdb-values.yaml
     It expects the Amazon RDS CA bundle to be available as the `mongodb-ca` secret:
       curl -O https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem

@@ -3,7 +3,7 @@
 # Vault base manifests
 
 This directory holds the raw Kubernetes manifests for **Vault**. Vault receives
-recordings from Kerberos Agents, stores recording metadata in MongoDB, and sends
+recordings from Agents, stores recording metadata in MongoDB, and sends
 recording bytes to storage providers configured through the Vault UI.
 
 > **Scope of this README.** At the top level of this repository Vault is normally
@@ -27,6 +27,85 @@ recording bytes to storage providers configured through the Vault UI.
 
 The matching `kerberos-vault` namespace is defined in
 [`../namespaces/kerberos-vault.yaml`](../namespaces/kerberos-vault.yaml).
+
+## Hardened Vault image
+
+Both deployment variants use the hardened Vault image
+`ghcr.io/uug-ai/vault:v1.7.19`. The Vault container runs as non-root UID/GID
+`65532`, drops Linux capabilities, disables privilege escalation, uses the
+`RuntimeDefault` seccomp profile, and has a read-only root filesystem.
+
+The image listens on container port `8080`. The Service keeps its existing
+port `80` and NodePort `30080`, forwarding to the named `http` container port.
+Startup, readiness, and liveness probes use `/api/health`.
+
+The image uses `/run/vault` for temporary upload/finalization files. Each
+Deployment mounts a writable, disk-backed `emptyDir` there, limited to `1Gi`;
+the pod `fsGroup` grants the non-root Vault process access. Size this scratch
+limit for expected concurrent uploads and available node ephemeral storage.
+
+### Size the writable scratch volume
+
+There is no one-size-fits-all volume size: estimate how many full recordings
+Vault may be writing to scratch at the same time, and the maximum size of each.
+
+- A regular HTTP upload is spooled to a temporary file. The default
+  `VAULT_MAX_PUBLISH_FILE_BYTES` limit is **1 GiB per upload**. If you change
+  this limit, use the new value in your sizing estimate.
+- Resumable tus chunks are stored in the configured object-storage provider,
+  not in this volume. When an upload is finalized, Vault downloads the completed
+  recording to a temporary file, so count concurrent **tus finalizations** and
+  their maximum recording sizes.
+- Set `TUS_MAX_SIZE_BYTES` to a positive byte limit to cap tus upload size. It is
+  unlimited when unset. For example, `1073741824` limits each tus upload to 1
+  GiB. Keep this cap within the scratch capacity you have planned.
+
+Use this conservative estimate, then round up to a convenient GiB value:
+
+```text
+scratch size >= 1.5 x (
+  concurrent HTTP uploads x maximum HTTP upload size
+  + concurrent tus finalizations x maximum tus upload size
+)
+```
+
+The `1.5` multiplier allows roughly 50% headroom. For example, allowing two
+simultaneous 1 GiB HTTP uploads and two simultaneous 1 GiB tus finalizations
+uses up to 4 GiB for those temporary files; choose a scratch limit of at least
+**6 GiB**. If you only expect two full-file operations at once in total, a
+**3 GiB** limit is a reasonable starting point. Increase it for larger files or
+more concurrent operations.
+
+To apply the 6 GiB example, set the tus cap and scratch limit in the Vault
+container and pod template of the Deployment you use. Make the same changes to
+the Secret-backed Deployment if you use that variant:
+
+```yaml
+spec:
+  template:
+    spec:
+      containers:
+        - name: vault
+          env:
+            - name: TUS_MAX_SIZE_BYTES
+              value: "1073741824"
+          volumeMounts:
+            - name: vault-tmp
+              mountPath: /run/vault
+      volumes:
+        - name: vault-tmp
+          emptyDir:
+            sizeLimit: 6Gi
+```
+
+Keep the existing `GIN_MODE` and other environment variables and the
+`vault-tmp` mount; merge these entries rather than replacing them. The disk-backed
+`emptyDir` is charged to node ephemeral storage: its `sizeLimit` is a ceiling,
+not a reservation. Make sure the node and your pod's ephemeral-storage
+requests/limits can accommodate scratch use as well as container logs and other
+temporary files. If the limit is exhausted, uploads or finalizations can fail.
+Apply the updated Deployment and check that the Vault pod becomes Ready before
+relying on the new limits.
 
 ## Prerequisites
 

@@ -71,7 +71,7 @@ For more detailed instructions and troubleshooting, please refer to the official
 
 ## Dependencies
 
-Before installing, several dependencies are required for storage, such as a database (e.g., MongoDB) and a message broker (e.g., RabbitMQ) for asynchronous behavior. We will install these components before setting up the Agents and Kerberos Vault.
+Before installing, several dependencies are required for storage, such as a database (e.g., MongoDB) and a message broker (e.g., RabbitMQ) for asynchronous behavior. We will install these components before setting up the Agents and Vault.
 
 One of the key advantages of MicroK8s is its out-of-the-box addons, which can be enabled with a single command. This eliminates the need for complex Helm charts or operators, simplifying the setup process. We will enable some common services, such as DNS, GPU support, and storage, to streamline the installation.
 
@@ -204,7 +204,7 @@ To access the application, open your browser and navigate to `localhost:8080`. U
 
 ### Database: MongoDB
 
-When using Vault, it will persist references to the recordings stored in your storage provider in a MongoDB database. As used before, we are using `helm` to install MongoDB in our Kubernetes cluster. Within the Kerberos Vault project we are using the latest official mongodb driver, so we support all major MongoDB versions (4.x, 5.x, 6.x, 7.x).
+When using Vault, it will persist references to the recordings stored in your storage provider in a MongoDB database. As used before, we are using `helm` to install MongoDB in our Kubernetes cluster. Within the Vault project we are using the latest official mongodb driver, so we support all major MongoDB versions (4.x, 5.x, 6.x, 7.x).
 
 Have a look into the `./mongodb-values.yaml` file, you will find plenty of configurations for the MongoDB helm chart. To change the username and password of the MongoDB instance, go ahead and [find the attribute where](https://github.com/kerberos-io/vault/blob/master/kubernetes/mongodb/values.yaml#L148) you can change the root password. Please note that we are using the official [Bitnami Mongodb helm chart](https://github.com/bitnami/charts/tree/main/bitnami/mongodb), so please use their repository for more indepth configuration.
 
@@ -431,7 +431,7 @@ kubectl apply -f kerberos-hub-create-database-job.yaml  -n kerberos-hub
 
 ## Cleanup
 
-If you consider to remove the Kerberos.io stack you might just disable the microk8s installation
+If you consider to remove the ecosystem you might just disable the microk8s installation
 
 ```bash
 microk8s reset
