@@ -1,0 +1,4 @@
+namespace: garage
+resources:
+  - namespace.yaml
+  - garage.yaml

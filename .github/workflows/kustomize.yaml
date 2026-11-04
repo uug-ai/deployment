@@ -1,4 +1,4 @@
-name: Deploy on kind using Kustmize
+name: Validate Kustomize and Garage on kind
 
 on:
   workflow_dispatch:
@@ -10,6 +10,7 @@ jobs:
   deploy:
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-22.04, ubuntu-24.04]
         #kind: [v0.21.0, v0.22.0, v0.23.0, v0.24.0, v0.25.0]
@@ -28,16 +29,34 @@ jobs:
           kubectl get pods -A -o wide
           kubectl get sc
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+      - name: Render base Kustomize manifests
+        run: kubectl kustomize base > "$RUNNER_TEMP/base.yaml"
+      - name: Use Kind storage provisioner
+        run: |
+          kubectl get storageclass standard -o json |
+            jq '{apiVersion,kind,metadata:{name:"ssd-hostpath"},provisioner,parameters,volumeBindingMode,reclaimPolicy}' |
+            kubectl apply -f -
+      - name: Install Garage and test persistent S3 access
+        run: |
+          bash scripts/install-garage.sh
+          bash scripts/check-garage.sh
+          credential_hash="$(kubectl -n garage get secret garage-credentials -o jsonpath='{.data}' | sha256sum)"
+          bash scripts/install-garage.sh
+          test "$credential_hash" = "$(kubectl -n garage get secret garage-credentials -o jsonpath='{.data}' | sha256sum)"
+          bash scripts/check-garage.sh --restart
+      - name: Collect deployment diagnostics
+        if: failure()
+        run: bash scripts/diagnose-deployment.sh
       - name: Send Slack Notification on Success
         if: success()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"✅ Kustomize deployment successful on ${{ matrix.os }} (${{ matrix.kind }}) - triggered by ${{ github.actor }}\"}" $SLACK_WEBHOOK_URL
+          bash scripts/notify-slack.sh "✅ Kustomize deployment successful on ${{ matrix.os }} (${{ matrix.kind }}) - triggered by ${{ github.actor }}"
       - name: Send Slack Notification on Failure
         if: failure()
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         run: |
-          curl -X POST -H 'Content-type: application/json' --data "{\"text\": \"❌ Kustomize deployment failed on ${{ matrix.os }} (${{ matrix.kind }}) - <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>\"}" $SLACK_WEBHOOK_URL
+          bash scripts/notify-slack.sh "❌ Kustomize deployment failed on ${{ matrix.os }} (${{ matrix.kind }}) - <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View logs>"

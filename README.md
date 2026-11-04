@@ -17,6 +17,19 @@ The Kerberos.io stack offers flexible installation options, supporting deploymen
 
 This repository continuously tests the Kerberos.io deployment using GitHub Actions across various platforms. Refer to the badges for an overview of the operating systems and Kubernetes distributions we are deploying to. We welcome suggestions for additional automations to consider.
 
+Kubernetes examples and CI now use **Garage S3** for local object storage.
+See the [Garage setup guide](./base/garage/README.md) for generated credentials,
+Vault configuration, persistence tests and existing MinIO compatibility.
+This is a single-node example, not a replicated production storage deployment.
+The [MinIO manifests](./base/minio/) remain available; no existing data is
+migrated or removed automatically. The Docker guide retains its separate
+storage setup.
+
+Slack notifications are optional. If `SLACK_WEBHOOK_URL` is unavailable (for
+example on fork PRs), CI emits a warning and skips delivery without masking
+deployment failures. Configured webhook delivery errors still fail the step.
+Failed deployment jobs collect pod events and bounded logs for diagnosis.
+
 ### Hardened Hub frontend
 
 The promoted frontend image requires Hub chart **0.170.0 or newer**, which
@@ -46,7 +59,7 @@ Edge (self-hosted) deployments are typically used for camera processing and edge
 
 ![Edge - self-hosted deployment](./assets/images/deployment-self-hosted.svg)
 
-A key aspect of this deployment is the scaling of Agents. Each camera is assigned a dedicated Agent container, which is linked to a central Kerberos Vault. The Kerberos Vault stores metadata in MongoDB, recordings in Minio (or another S3-compliant object storage), and can generate events in a message broker like RabbitMQ. This approach enables you to develop custom applications/logic that can respond to the creation of new recordings.
+A key aspect of this deployment is the scaling of Agents. Each camera is assigned a dedicated Agent container, which is linked to a central Kerberos Vault. The Kerberos Vault stores metadata in MongoDB, recordings in Garage (or another S3-compliant object storage), and can generate events in a message broker like RabbitMQ. This approach enables you to develop custom applications/logic that can respond to the creation of new recordings.
 
 Based on your technology experience and preferences, you can choose from the following deployment guides:
 

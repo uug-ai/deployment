@@ -39,6 +39,8 @@ if [ "$command" == "apply" ]; then
   # Adjust the base path reference
   sed -i "s|../../base|./base|g" ./kustomization.yaml
 
+  bash scripts/install-garage.sh --prepare-only || exit 1
+
   # Apply kustomize installation
   kubectl kustomize ./ --enable-helm --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
