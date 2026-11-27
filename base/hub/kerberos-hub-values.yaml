@@ -394,15 +394,6 @@ kerberoshub:
       limits:
         memory: 50Mi
         cpu: 50m
-  forwarder:
-    enabled: false
-    #repository: kerberos/vault-forwarder
-    #pullPolicy: IfNotPresent
-    #tag: "1.0.2732389692"
-    #resources:
-    #  requests:
-    #    memory: 10Mi
-    #    cpu: 10m
   # This proxy is legacy for the old agent, will be migrated in the new Hub API.
   proxy:
     repository: uugai/hub-proxy
